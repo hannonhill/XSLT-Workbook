@@ -29,11 +29,12 @@
    <xsl:template name="truncate-at-word">
 		<xsl:param name="length" select="140"/>
 		<xsl:param name="string"/>
+		<xsl:param name="tokens" select="'&#x9;&#xA;&#xD;&#x20;'" />
 		
 		<xsl:variable name="max" select="number($length)"/>
 		<xsl:variable name="stringLength" select="string-length($string)" />
 		<xsl:variable name="roughCut" select="substring($string, 1, $max)"/>
-		<xsl:variable name="tokenized" select="str:tokenize($roughCut)"/>
+		<xsl:variable name="tokenized" select="str:tokenize($roughCut, $tokens)"/>
 		
 		<xsl:choose>
 			<xsl:when test="$stringLength > $max">
