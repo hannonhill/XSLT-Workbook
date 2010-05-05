@@ -2,7 +2,7 @@
 <!--
 	Alphabet Grouping
 	Created by Ross Williams on 2009-06-18.
-	*Copyright (c) 2010* Hannon Hill Corp. All rights reserved.
+	Copyright (c) 2010 Hannon Hill Corp. All rights reserved.
 -->
 
 <xsl:stylesheet version="1.0"
