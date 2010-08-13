@@ -52,7 +52,7 @@
 				<!-- write RSS header information -->
 				<xsl:apply-templates mode="current" select="calling-page/system-page"/>
 				<!-- write items, make sure pages have last-published-on element -->
-				<xsl:apply-templates select="system-page | system-folder//system-page">
+				<xsl:apply-templates select="system-page[not(@current)] | system-folder//system-page[not(@current)]">
 					<xsl:sort order="descending" select="start-date"/>
 					<xsl:sort order="descending" select="last-published-on"/>
 					<xsl:sort order="descending" select="created-on"/>
