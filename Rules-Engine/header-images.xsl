@@ -3,12 +3,20 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" extension-element-prefixes="exsl"
     xmlns:exsl="http://exslt.org/common">
 
+    <!-- Above the lines mentioning exsl enable the use of the node-set -->
+    <!-- commands below -->
+    <!-- example: select="exsl:node-set($rules)" -->
+    <!-- says use the data in the rules variable like a document input -->
+    
+    <!-- the xmlns:hh="http://www.hannonhill.com/XSL/Functions" namespace -->
+    <!-- allows the use of the Javascript used for Regular Expressions -->
+
     <xsl:output method="html"/>
 
     <!-- Path of Calling Page -->
-<xsl:variable name="path">
-    <xsl:value-of select="system-index-block/calling-page/system-page/path"/>
-</xsl:variable>
+    <xsl:variable name="path">
+        <xsl:value-of select="system-index-block/calling-page/system-page/path"/>
+    </xsl:variable>
 
     <!-- Process rules, split any cases where there are more than one rule -->
     <xsl:variable name="rules">
@@ -106,10 +114,10 @@
 
     <!-- assign a type to rules so they can be sorted -->
     <!-- Order of precedence: -->
-    <!-- page specific, rules that don't end in '/' -->
-    <!-- * rules for pages-->
-    <!-- * rules for folders-->
-    <!-- directory rules that end in '/' -->
+    <!-- 1 - page specific, rules that don't end in '/' -->
+    <!-- 2 - * rules for pages-->
+    <!-- 3 - * rules for folders-->
+    <!-- 4 - directory rules that end in '/' -->
     <xsl:template name="ruleType">
         <xsl:param name="rule"/>
         <type>
@@ -164,11 +172,14 @@
         </xsl:variable>
 
         <!-- use only the first match -->
+        <!-- This output is two paragraphs -->
+        <!-- The first one holds an image -->
+        <!-- The second one is used by print css and is hidden by screen css -->
         <p>
-<img>
-    <xsl:attribute name="alt">
-        <xsl:value-of select="exsl:node-set($matches)/system-page[1]/name"/>
-    </xsl:attribute>
+            <img>
+                <xsl:attribute name="alt">
+                    <xsl:value-of select="exsl:node-set($matches)/system-page[1]/name"/>
+                </xsl:attribute>
                 <xsl:attribute name="src">
                     <xsl:text>[system-asset]</xsl:text>
                     <xsl:value-of select="exsl:node-set($matches)/system-page[1]/content"/>
@@ -208,6 +219,5 @@ var match = function (path, rule) {
 			]]>
         </xalan:script>
     </xalan:component>
-
 
 </xsl:stylesheet>
