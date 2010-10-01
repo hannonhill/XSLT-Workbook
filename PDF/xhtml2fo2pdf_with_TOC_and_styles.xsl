@@ -1,6 +1,7 @@
 <xsl:stylesheet version="1.0" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<!-- <xsl:import href="/css/style_standards"/> -->
 <xsl:output encoding="utf-8" indent="yes" method="xml" version="1.0"/>
- 
+
 <!--======================================================================
        Parameters
  
@@ -1591,4 +1592,6 @@ hidden</xsl:attribute>
 <xsl:template match="system-page-display-name | html:system-page-display-name | system-page-title | html:system-page-title | system-page-summary | html:system-page-summary">
 <xsl:copy-of select="."/>
 </xsl:template>
+<!-- Suppress any calls to CSS styling templates that don't exist -->
+<xsl:template match="node()" mode="css"/>
 </xsl:stylesheet>
