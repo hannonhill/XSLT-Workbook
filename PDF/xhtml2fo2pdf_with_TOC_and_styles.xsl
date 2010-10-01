@@ -1430,10 +1430,7 @@ hidden</xsl:attribute>
      </fo:external-graphic>
    </xsl:template>
    <xsl:template name="process-img">
-     <xsl:attribute name="src">
- 
-<xsl:text>url('</xsl:text>[system-asset:embedded-image]<xsl:value-of select="@src"/>[/system-asset:embedded-image]<xsl:text>')</xsl:text>
-     </xsl:attribute>
+     <xsl:attribute name="src">[system-asset:embedded-image]<xsl:value-of select="@src"/>[/system-asset:embedded-image]</xsl:attribute>
      <xsl:if test="@alt">
        <xsl:attribute name="role">
          <xsl:value-of select="@alt"/>
@@ -1551,7 +1548,7 @@ hidden</xsl:attribute>
 	       </xsl:choose>
         </xsl:when>
         <xsl:otherwise>
-         <xsl:attribute name="external-destination">url('<xsl:value-of select="@href"/>')</xsl:attribute>
+         <xsl:attribute name="external-destination"><xsl:value-of select="@href"/></xsl:attribute>
         </xsl:otherwise>
      </xsl:choose>
      <xsl:if test="@title">
