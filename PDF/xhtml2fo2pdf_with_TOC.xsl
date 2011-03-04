@@ -1368,12 +1368,12 @@ hidden</xsl:attribute>
        <xsl:call-template name="process-common-attributes-and-children"/>
      </fo:bidi-override>
    </xsl:template>
-   <!-- Capture the br tag and don't do anything -->
-   <!--
-<xsl:template match="br">
-   <fo:break> </fo:break>
-</xsl:template>
-   -->
+   <!-- Capture the br tag and output an empty block containing a non-breaking space (Unicode 0xa0) -->
+
+   <xsl:template match="br | html:br">
+      <fo:block line-height="0">&#160;</fo:block>
+   </xsl:template>
+
    <xsl:template match="q | html:q">
      <fo:inline xsl:use-attribute-sets="q">
        <xsl:call-template name="process-common-attributes"/>
