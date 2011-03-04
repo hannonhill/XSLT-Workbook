@@ -1132,6 +1132,10 @@ hidden</xsl:attribute>
          <xsl:value-of select="@rowspan"/>
        </xsl:attribute>
      </xsl:if>
+     <xsl:call-template name="process-col-width">
+       <xsl:with-param name="width" select="@width"/>
+       <!-- it may override related colgroup's or col's width -->
+     </xsl:call-template>
      <xsl:for-each select="ancestor::table[1] | ancestor::html:table[1]">
        <xsl:if test="(@border or @rules) and (@rules = 'all' or not(@rules) and not(@border = '0'))">
          <xsl:attribute name="border-style">solid</xsl:attribute><!--Bob changed this from inset-->
@@ -1162,8 +1166,12 @@ hidden</xsl:attribute>
    </xsl:template>
    <xsl:template name="process-col-width">
      <xsl:param name="width"/>
+		<xsl:variable name="attributeName"><xsl:choose>
+	  <xsl:when test="ancestor::colgroup | ancestor::html:colgroup | ancestor::col | ancestor::html:col">column-width</xsl:when>
+		<xsl:otherwise>width</xsl:otherwise>
+		</xsl:choose></xsl:variable>
      <xsl:if test="$width and $width != '0*'">
-       <xsl:attribute name="column-width">
+       <xsl:attribute name="{$attributeName}">
          <xsl:choose>
            <xsl:when test="contains($width, '*')">
              <xsl:text>proportional-column-width(</xsl:text>
