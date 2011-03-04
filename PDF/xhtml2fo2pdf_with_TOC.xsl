@@ -7,6 +7,9 @@
 =======================================================================-->
 	<!-- Instance-specific parameters -->
 	<xsl:param name="serverURL">http://www.myorganization.com/</xsl:param>
+	<xsl:param name="pixelsPerInch">72</xsl:param>
+	<!-- Must be true() or false() [no quotes] -->
+	<xsl:param name="fitToPageWidth" select="true()" />
 	
 	<!-- Table of Contents -->
 	<!-- <xsl:variable name="discoveredMeta">
@@ -82,6 +85,7 @@
      <!-- specified on fo:simple-page-master -->
    </xsl:attribute-set>
    <xsl:attribute-set name="body">
+		<xsl:attribute name="font-size"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="12"/></xsl:call-template></xsl:attribute>
      <!-- specified on fo:flow's only child fo:block -->
    </xsl:attribute-set>
    <xsl:attribute-set name="page-header">
@@ -182,7 +186,7 @@ fo:block -->
      <xsl:attribute name="font-style">italic</xsl:attribute>
    </xsl:attribute-set>
    <xsl:attribute-set name="hr">
-     <xsl:attribute name="border">1px inset</xsl:attribute>
+     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template> inset</xsl:attribute>
      <xsl:attribute name="space-before">0.67em</xsl:attribute>
      <xsl:attribute name="space-after">0.67em</xsl:attribute>
    </xsl:attribute-set>
@@ -269,8 +273,8 @@ fo:block -->
    <xsl:attribute-set name="table">
    <!--
      <xsl:attribute name="border-collapse">separate</xsl:attribute>
-     <xsl:attribute name="border-spacing">2px</xsl:attribute>
-     <xsl:attribute name="border">1px</xsl:attribute>
+     <xsl:attribute name="border-spacing"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="2"/></xsl:call-template></xsl:attribute>
+     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
      <xsl:attribute name="border-style">outset</xsl:attribute>
      -->
    </xsl:attribute-set>
@@ -290,18 +294,18 @@ fo:block -->
    <xsl:attribute-set name="th">
      <xsl:attribute name="font-weight">bold</xsl:attribute>
      <xsl:attribute name="text-align">center</xsl:attribute>
-     <xsl:attribute name="border">1px</xsl:attribute>
+     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
      <!--
      <xsl:attribute name="border-style">inset</xsl:attribute>
      -->
-     <xsl:attribute name="padding">1px</xsl:attribute>
+     <xsl:attribute name="padding"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
    </xsl:attribute-set>
    <xsl:attribute-set name="td">
-     <xsl:attribute name="border">1px</xsl:attribute>
+     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
      <!--
      <xsl:attribute name="border-style">inset</xsl:attribute>
      -->
-     <xsl:attribute name="padding">1px</xsl:attribute>
+     <xsl:attribute name="padding"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
    </xsl:attribute-set>
    <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         Inline-level
@@ -392,7 +396,7 @@ fo:block -->
    <xsl:attribute-set name="img">
    </xsl:attribute-set>
    <xsl:attribute-set name="img-link">
-     <xsl:attribute name="border">2px solid</xsl:attribute>
+     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="2"/></xsl:call-template> solid</xsl:attribute>
    </xsl:attribute-set>
    <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         Link
@@ -938,7 +942,7 @@ fo:block -->
              <xsl:value-of select="@width"/>
            </xsl:when>
            <xsl:otherwise>
-             <xsl:value-of select="@width"/>px</xsl:otherwise>
+             <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@width"/></xsl:call-template></xsl:otherwise>
          </xsl:choose>
        </xsl:attribute>
      </xsl:if>
@@ -949,7 +953,7 @@ fo:block -->
        <xsl:choose>
          <xsl:when test="@border > 0">
            <xsl:attribute name="border">
-             <xsl:value-of select="@border"/>px</xsl:attribute>
+             <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@border"/></xsl:call-template></xsl:attribute>
          </xsl:when>
        </xsl:choose>
        <xsl:choose>
@@ -986,7 +990,7 @@ hidden</xsl:attribute>
      <xsl:if test="@cellspacing">
        <!-- removed by Bob
        <xsl:attribute name="border-spacing">
-         <xsl:value-of select="@cellspacing"/>px</xsl:attribute>
+         <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@cellspacing"/></xsl:call-template></xsl:attribute>
        <xsl:attribute name="border-collapse">separate</xsl:attribute>
        -->
      </xsl:if>
@@ -1047,7 +1051,7 @@ hidden</xsl:attribute>
    </xsl:template>
    <xsl:template name="process-table-rowgroup">
      <xsl:if test="ancestor::table[1]/@rules = 'groups' or ancestor::html:table[1]/@rules = 'groups'">
-       <xsl:attribute name="border">1px solid</xsl:attribute>
+       <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template> solid</xsl:attribute>
      </xsl:if>
      <xsl:call-template name="process-common-attributes-and-children"/>
    </xsl:template>
@@ -1086,7 +1090,7 @@ hidden</xsl:attribute>
        <!-- it may override parent colgroup's width -->
      </xsl:call-template>
      <xsl:if test="ancestor::table[1]/@rules = 'cols' or ancestor::html:table[1]/@rules = 'cols'">
-       <xsl:attribute name="border">1px solid</xsl:attribute>
+       <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template> solid</xsl:attribute>
      </xsl:if>
      <xsl:call-template name="process-common-attributes"/>
      <!-- this processes also align and valign -->
@@ -1103,7 +1107,7 @@ hidden</xsl:attribute>
    </xsl:template>
    <xsl:template name="process-table-row">
      <xsl:if test="ancestor::table[1]/@rules = 'rows' or ancestor::html:table[1]/@rules = 'rows'">
-       <xsl:attribute name="border">1px solid</xsl:attribute>
+       <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template> solid</xsl:attribute>
      </xsl:if>
      <xsl:call-template name="process-common-attributes-and-children"/>
    </xsl:template>
@@ -1139,7 +1143,7 @@ hidden</xsl:attribute>
                <xsl:value-of select="@cellpadding"/>
              </xsl:when>
              <xsl:otherwise>
-               <xsl:value-of select="@cellpadding"/>px</xsl:otherwise>
+               <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@cellpadding"/></xsl:call-template></xsl:otherwise>
            </xsl:choose>
          </xsl:attribute>
        </xsl:if>
@@ -1170,7 +1174,7 @@ hidden</xsl:attribute>
              <xsl:value-of select="$width"/>
            </xsl:when>
            <xsl:otherwise>
-             <xsl:value-of select="$width"/>px</xsl:otherwise>
+             <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="$width"/></xsl:call-template></xsl:otherwise>
          </xsl:choose>
        </xsl:attribute>
      </xsl:if>
@@ -1432,7 +1436,7 @@ hidden</xsl:attribute>
          </xsl:when>
          <xsl:otherwise>
            <xsl:attribute name="content-width">
-             <xsl:value-of select="@width"/>px</xsl:attribute>
+             <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@width"/></xsl:call-template></xsl:attribute>
          </xsl:otherwise>
        </xsl:choose>
      </xsl:if>
@@ -1446,13 +1450,13 @@ hidden</xsl:attribute>
          </xsl:when>
          <xsl:otherwise>
            <xsl:attribute name="content-height">
-             <xsl:value-of select="@height"/>px</xsl:attribute>
+             <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@height"/></xsl:call-template></xsl:attribute>
          </xsl:otherwise>
        </xsl:choose>
      </xsl:if>
      <xsl:if test="@border">
        <xsl:attribute name="border">
-         <xsl:value-of select="@border"/>px solid</xsl:attribute>
+         <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@border"/></xsl:call-template> solid</xsl:attribute>
      </xsl:if>
      <xsl:call-template name="process-common-attributes"/>
    </xsl:template>
@@ -1573,5 +1577,21 @@ hidden</xsl:attribute>
    </xsl:template>
 <xsl:template match="system-page-display-name | html:system-page-display-name | system-page-title | html:system-page-title | system-page-summary | html:system-page-summary">
 <xsl:copy-of select="."/>
+</xsl:template>
+
+<!-- Convert pixel measurements to points based on pixelsPerInch param -->
+<xsl:template name="pxTopt">
+	<xsl:param name="px"/>
+	<xsl:variable name="fopResolution" select="72"/>
+	<!-- Assumes page size given in inches ['in' suffix] -->
+	<xsl:variable name="pageWidthInPt" select="(number(substring-before($page-width,'in')) - (number(substring-before($page-margin-left,'in')) + number(substring-before($page-margin-right,'in')))) * $fopResolution" />
+	<xsl:choose>
+		<xsl:when test="$fitToPageWidth and (number($px) div number($pixelsPerInch) * $fopResolution) > $pageWidthInPt">
+			<xsl:value-of select="concat(string($pageWidthInPt),'pt')"/>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="concat(string(number($px) div number($pixelsPerInch) * $fopResolution),'pt')"/>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 </xsl:stylesheet>
