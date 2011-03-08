@@ -1000,9 +1000,15 @@ hidden</xsl:attribute>
          <xsl:attribute name="border-style">hidden</xsl:attribute>
        </xsl:if>
      </xsl:if>
-     <xsl:call-template name="create-columns"/>
+     <xsl:choose>
+      <xsl:when test="col | html:col | colgroup | html:colgroup">
+         <xsl:apply-templates select="col | html:col | colgroup | html:colgroup"/>
+      </xsl:when>
+      <xsl:otherwise>
+         <xsl:call-template name="create-columns"/>
+      </xsl:otherwise>
+     </xsl:choose>
      <xsl:call-template name="process-common-attributes"/>
-     <xsl:apply-templates select="col | html:col | colgroup | html:colgroup"/>
      <xsl:apply-templates select="thead | html:thead"/>
      <xsl:apply-templates select="tfoot | html:tfoot"/>
      <xsl:choose>
