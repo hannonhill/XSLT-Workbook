@@ -1181,8 +1181,12 @@ hidden</xsl:attribute>
    </xsl:template>
    <xsl:template name="process-col-width">
      <xsl:param name="width"/>
+		<xsl:variable name="attributeName"><xsl:choose>
+	  <xsl:when test="ancestor-or-self::colgroup | ancestor-or-self::html:colgroup | ancestor-or-self::col | ancestor-or-self::html:col">column-width</xsl:when>
+		<xsl:otherwise>width</xsl:otherwise>
+		</xsl:choose></xsl:variable>
      <xsl:if test="$width and $width != '0*'">
-       <xsl:attribute name="column-width">
+       <xsl:attribute name="{$attributeName}">
          <xsl:choose>
            <xsl:when test="contains($width, '*')">
              <xsl:text>proportional-column-width(</xsl:text>
@@ -1193,7 +1197,7 @@ hidden</xsl:attribute>
              <xsl:value-of select="$width"/>
            </xsl:when>
            <xsl:otherwise>
-             <xsl:value-of select="$width"/>px</xsl:otherwise>
+             <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="$width"/></xsl:call-template></xsl:otherwise>
          </xsl:choose>
        </xsl:attribute>
      </xsl:if>

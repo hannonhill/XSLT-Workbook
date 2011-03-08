@@ -1173,7 +1173,7 @@ hidden</xsl:attribute>
    <xsl:template name="process-col-width">
      <xsl:param name="width"/>
 		<xsl:variable name="attributeName"><xsl:choose>
-	  <xsl:when test="ancestor::colgroup | ancestor::html:colgroup | ancestor::col | ancestor::html:col">column-width</xsl:when>
+	  <xsl:when test="ancestor-or-self::colgroup | ancestor-or-self::html:colgroup | ancestor-or-self::col | ancestor-or-self::html:col">column-width</xsl:when>
 		<xsl:otherwise>width</xsl:otherwise>
 		</xsl:choose></xsl:variable>
      <xsl:if test="$width and $width != '0*'">
