@@ -514,7 +514,7 @@ fo:block -->
 				</fo:block>
 	       	<xsl:apply-templates mode="toc" select=".//*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#'] | .//html:*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#']"/>
 			</xsl:if>
-         <fo:block xsl:use-attribute-sets="body">
+         <fo:block xsl:use-attribute-sets="body" id="fo-top">
            <xsl:call-template name="process-common-attributes"/>
            <xsl:apply-templates/>
          </fo:block>
@@ -1516,6 +1516,9 @@ hidden</xsl:attribute>
    <xsl:template name="process-a-link">
      <xsl:call-template name="process-common-attributes"/>
      <xsl:choose>
+       <xsl:when test="@href='#'"><!-- Linking to the top of the page without using an internal anchor -->
+         <xsl:attribute name="internal-destination">fo-top</xsl:attribute><!-- fo-top defined above in template match="body" -->
+       </xsl:when>
        <xsl:when test="starts-with(@href,'#')"><!-- Linking to the same page -->
          <xsl:attribute name="internal-destination">
            <xsl:value-of select="substring-after(@href,'#')"/>
