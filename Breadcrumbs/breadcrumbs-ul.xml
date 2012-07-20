@@ -1,0 +1,76 @@
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:variable name="defaultPage">index</xsl:variable>
+    <xsl:variable name="separator"> &#187; </xsl:variable>
+    <xsl:variable name="ulID">myID</xsl:variable>
+    <xsl:variable name="liClass">myClass</xsl:variable>
+    <xsl:template match="/system-index-block">
+        <ul>
+            <xsl:attribute name="id">
+                <xsl:value-of select="$ulID"/>
+            </xsl:attribute>
+            <xsl:apply-templates select="system-folder"/>
+        </ul>
+    </xsl:template>
+    <xsl:template match="system-folder">
+        <xsl:choose>
+            <xsl:when test="self::system-folder[@current]">
+                <xsl:choose>
+                    <xsl:when test="system-page[name = '{$defaultPage}']">
+                        <xsl:call-template name="chooseDisplay"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:call-template name="displayLink"/>
+                        <xsl:apply-templates select="system-page"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:call-template name="displayLink"/>
+                <xsl:apply-templates select="system-folder"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template match="system-page">
+        <li>
+            <xsl:call-template name="linkClass"/>
+            <xsl:call-template name="chooseDisplay"/>
+        </li>
+    </xsl:template>
+    <xsl:template name="displayLink">
+        <li>
+            <xsl:call-template name="linkClass"/>
+            <a>
+                <xsl:attribute name="href">
+                    <xsl:choose>
+                        <xsl:when test="self::system-folder[name = '/']">
+                            <xsl:value-of select="concat(link,'index')"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="concat(link,'/index')"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:attribute>
+                <xsl:call-template name="chooseDisplay"/>
+            </a>
+        </li>
+        <li>
+            <xsl:call-template name="linkClass"/>
+            <xsl:value-of select="$separator"/>
+        </li>
+    </xsl:template>
+    <xsl:template name="chooseDisplay">
+        <xsl:choose>
+            <xsl:when test="display-name != ''">
+                <xsl:value-of select="display-name"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="name"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template name="linkClass">
+        <xsl:attribute name="class">
+            <xsl:value-of select="$liClass"/>
+        </xsl:attribute>
+    </xsl:template>
+</xsl:stylesheet>

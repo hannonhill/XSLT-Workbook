@@ -1,0 +1,55 @@
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:variable name="defaultPage">index</xsl:variable>
+    <xsl:variable name="separator"> &#187; </xsl:variable>
+    <xsl:template match="/system-index-block">
+        <xsl:apply-templates select="system-folder"/>
+    </xsl:template>
+    <xsl:template match="system-folder">
+        <xsl:choose>
+            <xsl:when test="self::system-folder[@current]">
+                <xsl:choose>
+                    <xsl:when test="system-page[name = '{$defaultPage}']">
+                        <xsl:call-template name="chooseDisplay"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:call-template name="displayLink"/>
+                        <xsl:apply-templates select="system-page"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:call-template name="displayLink"/>
+                <xsl:apply-templates select="system-folder"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template match="system-page">
+        <xsl:call-template name="chooseDisplay"/>
+    </xsl:template>
+    <xsl:template name="displayLink">
+        <a>
+            <xsl:attribute name="href">
+                <xsl:choose>
+                    <xsl:when test="self::system-folder[name = '/']">
+                        <xsl:value-of select="concat(link,'index')"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat(link,'/index')"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:call-template name="chooseDisplay"/>
+        </a>
+        <xsl:value-of select="$separator"/>
+    </xsl:template>
+    <xsl:template name="chooseDisplay">
+        <xsl:choose>
+            <xsl:when test="display-name != ''">
+                <xsl:value-of select="display-name"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="name"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+</xsl:stylesheet>
