@@ -40,7 +40,8 @@
 	<xsl:variable name="web_master">webmaster@myorganization.com</xsl:variable>
 	<!-- Path in the CMS: -->
 	<!-- Empty if you are using Cascade Server 6+ Sites -->
-	<xsl:variable name="site_path"/>
+	<xsl:variable name="site_path">example.com</xsl:variable>
+
 	<!-- Folder path to your site's root if you are using the Global Area -->
 	<!-- <xsl:variable name="site_path">/MyOrg</xsl:variable> -->
 
@@ -132,7 +133,7 @@
 	</xsl:template>
 	
 	<!-- Override link rewriting behavior of xhtml2escapedHtml for compatiblity with RSS 2.0 -->
-	<xsl:template match="@href|@src" mode="xhtml2html"><xsl:text> </xsl:text><xsl:value-of select="local-name(.)"/>="<xsl:choose><xsl:when test="starts-with(.,$site_path)"><xsl:value-of select="concat($website_path,substring-after(.,$site_path))"/></xsl:when><xsl:otherwise>[system-asset]<xsl:value-of select="."/>[/system-asset]</xsl:otherwise></xsl:choose>"</xsl:template>
+	<xsl:template match="@href|@src" mode="xhtml2html"><xsl:text> </xsl:text><xsl:value-of select="local-name(.)"/>="<xsl:choose><xsl:when test="starts-with(.,$site_path)"><xsl:value-of select="concat($website_prefix,substring-after(.,$site_path))"/></xsl:when><xsl:when test="starts-with(.,'http://')"><xsl:value-of select="."/></xsl:when><xsl:otherwise>[system-asset]<xsl:value-of select="."/>[/system-asset]</xsl:otherwise></xsl:choose>"</xsl:template>
 	
 	
 	<!-- Xalan component for date conversion from CMS date format to RSS 2.0 pubDate format -->
