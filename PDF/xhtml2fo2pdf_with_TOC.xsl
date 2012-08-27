@@ -1,51 +1,88 @@
-<xsl:stylesheet version="1.0" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:html="http://www.w3.org/1999/xhtml">
 <xsl:output encoding="utf-8" indent="yes" method="xml" version="1.0"/>
  
 <!--======================================================================
        Parameters
  
 =======================================================================-->
-	<!-- Instance-specific parameters -->
-	<xsl:param name="serverURL">http://www.myorganization.com/</xsl:param>
-	<xsl:param name="pixelsPerInch">72</xsl:param>
-	<!-- Must be true() or false() [no quotes] -->
-	<xsl:param name="fitToPageWidth" select="true()" />
-	
-	<!-- Table of Contents -->
-	<!-- <xsl:variable name="discoveredMeta">
-			<xsl:for-each select="/html/head/meta | /html:html/html:head/html:meta">
-				<xsl:for-each select="@* | @html:*">
-					@<xsl:value-of select="name()"/> = <xsl:value-of select="."/><xsl:if test="position() != last()">, </xsl:if>
-				</xsl:for-each>
-				<xsl:if test="position() != last()">;
-				</xsl:if>
-			</xsl:for-each>
-		</xsl:variable> --><!-- DEBUG -->
-	<xsl:param name="includeTocPrinted" select="/html/head/meta[@name='generatePrintedPdfTableOfContents']/@content = 'true' or /html:html/html:head/html:meta[@name='generatePrintedPdfTableOfContents']/@content = 'true'"/>
-	<xsl:param name="includeTocBookmarks" select="/html/head/meta[@name='generatePdfTableOfContentsBookmarks']/@content = 'true' or /html:html/html:head/html:meta[@name='generatePdfTableOfContentsBookmarks']/@content = 'true'"/>
-	<xsl:param name="tocHeadingLevels" select="concat(translate(/html/head/meta[@name='pdfTableOfContentsHeadingLevels']/@content,',',''), translate(/html:html/html:head/html:meta[@name='pdfTableOfContentsHeadingLevels']/@content,',',''))"/>
-	<xsl:param name="tocTitle" select="concat(/html/head/meta[@name='pdfTableOfContentsTitle']/@content,/html:html/html:head/html:meta[@name='pdfTableOfContentsTitle']/@content)"/>
-	<xsl:param name="pageOrientation" select="concat(/html/head/meta[@name='pdfPageOrientation']/@content,/html:html/html:head/html:meta[@name='pdfPageOrientation']/@content)"/>
-	<xsl:param name="pageSize" select="concat(/html/head/meta[@name='pdfPageSize']/@content,/html:html/html:head/html:meta[@name='pdfPageSize']/@content)"/>
+  <!--======================================================================
+       Instance-specific parameters 
+  =======================================================================-->
+  <!-- 
+    URL to be used for same-site internal links. 
+    Don't forget the trailing / ! 
+  -->   
+  <xsl:param name="currentSiteURL">http://localhost/</xsl:param>
+  
+  <!-- 
+    A hidden DIV should be added to a template region that has an ID containing the 
+    current site name. This prefix is just a way to make sure it's unique.
+    
+    Format to add this DIV:
+    
+    <?xml version="1.0" encoding="UTF-8"?>
+    <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+      <xsl:template match="/system-index-block/calling-page/system-page">
+        <div id="CURRENT-SITE:{site}"></div>
+      </xsl:template>
+    </xsl:stylesheet>
+  -->
+  <xsl:param name="currentSiteNameDivPrefix">CURRENT-SITE:</xsl:param>
+  
+  <!--
+    Links that are same-site in the format site://{$currentSiteName} will have 
+    the $currentSiteURL param appended to the front.
+  -->
+  <xsl:param name="currentSiteName">site://<xsl:value-of select="substring-after(//div[starts-with(@id, $currentSiteNameDivPrefix)]/@id, $currentSiteNameDivPrefix)"/></xsl:param>
+  
+  <!-- 
+    Default internal page extension (ie .html, .php, .asp, etc.) used
+    for same-site internal link rewriting.
+  -->
+  <xsl:param name="internalPageExt">.html</xsl:param>
+  
+    <!--====================================================================h-->
+    
+    <xsl:param name="pixelsPerInch">72</xsl:param>
+    <!-- Must be true() or false() [no quotes] -->
+    <xsl:param name="fitToPageWidth" select="true()"/>
+    
+    <!-- Table of Contents -->
+    <!-- <xsl:variable name="discoveredMeta">
+            <xsl:for-each select="/html/head/meta | /html:html/html:head/html:meta">
+                <xsl:for-each select="@* | @html:*">
+                    @<xsl:value-of select="name()"/> = <xsl:value-of select="."/><xsl:if test="position() != last()">, </xsl:if>
+                </xsl:for-each>
+                <xsl:if test="position() != last()">;
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable> --><!-- DEBUG -->
+    <xsl:param name="includeTocPrinted" select="/html/head/meta[@name='generatePrintedPdfTableOfContents']/@content = 'true' or /html:html/html:head/html:meta[@name='generatePrintedPdfTableOfContents']/@content = 'true'"/>
+    <xsl:param name="includeTocBookmarks" select="/html/head/meta[@name='generatePdfTableOfContentsBookmarks']/@content = 'true' or /html:html/html:head/html:meta[@name='generatePdfTableOfContentsBookmarks']/@content = 'true'"/>
+    <xsl:param name="tocHeadingLevels" select="concat(translate(/html/head/meta[@name='pdfTableOfContentsHeadingLevels']/@content,',',''), translate(/html:html/html:head/html:meta[@name='pdfTableOfContentsHeadingLevels']/@content,',',''))"/>
+    <xsl:param name="tocTitle" select="concat(/html/head/meta[@name='pdfTableOfContentsTitle']/@content,/html:html/html:head/html:meta[@name='pdfTableOfContentsTitle']/@content)"/>
+    <xsl:param name="pageOrientation" select="concat(/html/head/meta[@name='pdfPageOrientation']/@content,/html:html/html:head/html:meta[@name='pdfPageOrientation']/@content)"/>
+    <xsl:param name="pageSize" select="concat(/html/head/meta[@name='pdfPageSize']/@content,/html:html/html:head/html:meta[@name='pdfPageSize']/@content)"/>
    <!-- page size -->
-	<xsl:param name="page-width">
-		<xsl:choose>
-			<xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Letter'">8.5in</xsl:when>
-			<xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Letter'">11in</xsl:when>
-			<xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Legal'">8.5in</xsl:when>
-			<xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Legal'">14in</xsl:when>
-			<xsl:otherwise>8.5in</xsl:otherwise>
-		</xsl:choose>
-	</xsl:param>
-	<xsl:param name="page-height">
-		<xsl:choose>
-			<xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Letter'">11in</xsl:when>
-			<xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Letter'">8.5in</xsl:when>
-			<xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Legal'">14in</xsl:when>
-			<xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Legal'">8.5in</xsl:when>
-			<xsl:otherwise>11in</xsl:otherwise>
-		</xsl:choose>
-	</xsl:param>
+    <xsl:param name="page-width">
+        <xsl:choose>
+            <xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Letter'">8.5in</xsl:when>
+            <xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Letter'">11in</xsl:when>
+            <xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Legal'">8.5in</xsl:when>
+            <xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Legal'">14in</xsl:when>
+            <xsl:otherwise>8.5in</xsl:otherwise>
+        </xsl:choose>
+    </xsl:param>
+    <xsl:param name="page-height">
+        <xsl:choose>
+            <xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Letter'">11in</xsl:when>
+            <xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Letter'">8.5in</xsl:when>
+            <xsl:when test="$pageOrientation = 'Portrait' and $pageSize = 'Legal'">14in</xsl:when>
+            <xsl:when test="$pageOrientation = 'Landscape' and $pageSize = 'Legal'">8.5in</xsl:when>
+            <xsl:otherwise>11in</xsl:otherwise>
+        </xsl:choose>
+    </xsl:param>
    <!-- page margins -->
    <xsl:param name="page-margin-top">.5in</xsl:param>
    <xsl:param name="page-margin-bottom">.5in</xsl:param>
@@ -70,420 +107,411 @@
        Attribute Sets
  
 =======================================================================-->
-   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        Root
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:attribute-set name="root">
-     <xsl:attribute name="writing-mode"><xsl:value-of select="$writing-mode"/></xsl:attribute>
-     <xsl:attribute name="hyphenate"><xsl:value-of select="$hyphenate"/></xsl:attribute>
-     <xsl:attribute name="text-align"><xsl:value-of select="$text-align"/></xsl:attribute>
-     <!-- specified on fo:root to change the properties' initial values -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="page">
-     <xsl:attribute name="page-width"><xsl:value-of select="$page-width"/></xsl:attribute>
-     <xsl:attribute name="page-height"><xsl:value-of select="$page-height"/></xsl:attribute>
-     <!-- specified on fo:simple-page-master -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="body">
-		<xsl:attribute name="font-size"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="12"/></xsl:call-template></xsl:attribute>
-     <!-- specified on fo:flow's only child fo:block -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="page-header">
-     <!-- specified on (page-header)fo:static-content's only child
-fo:block -->
-     <xsl:attribute name="font-size">small</xsl:attribute>
-     <xsl:attribute name="text-align">center</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="page-footer">
-     <!-- specified on (page-footer)fo:static-content's only child
-fo:block -->
-     <xsl:attribute name="font-size">small</xsl:attribute>
-     <xsl:attribute name="text-align">center</xsl:attribute>
-   </xsl:attribute-set>
+  <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    Root
+  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
+  <xsl:attribute-set name="root">
+    <xsl:attribute name="writing-mode"><xsl:value-of select="$writing-mode"/></xsl:attribute>
+    <xsl:attribute name="hyphenate"><xsl:value-of select="$hyphenate"/></xsl:attribute>
+    <xsl:attribute name="text-align"><xsl:value-of select="$text-align"/></xsl:attribute>
+    <!-- specified on fo:root to change the properties' initial values -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="page">
+    <xsl:attribute name="page-width"><xsl:value-of select="$page-width"/></xsl:attribute>
+    <xsl:attribute name="page-height"><xsl:value-of select="$page-height"/></xsl:attribute>
+    <!-- specified on fo:simple-page-master -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="body">
+    <xsl:attribute name="font-size"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="12"/></xsl:call-template></xsl:attribute>
+    <!-- specified on fo:flow's only child fo:block -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="page-header">
+    <!-- specified on (page-header)fo:static-content's only child fo:block -->
+    <xsl:attribute name="font-size">small</xsl:attribute>
+    <xsl:attribute name="text-align">center</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="page-footer">
+    <!-- specified on (page-footer)fo:static-content's only child fo:block -->
+    <xsl:attribute name="font-size">small</xsl:attribute>
+    <xsl:attribute name="text-align">center</xsl:attribute>
+  </xsl:attribute-set>
    <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         Block-level
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:attribute-set name="h1">
-     <xsl:attribute name="font-size">2em</xsl:attribute>
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="space-before">0.5em</xsl:attribute>
-     <xsl:attribute name="space-after">0.5em</xsl:attribute>
-     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
-     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="h2">
-     <xsl:attribute name="font-size">1.5em</xsl:attribute>
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="space-before">0.5em</xsl:attribute>
-     <xsl:attribute name="space-after">0.5em</xsl:attribute>
-     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
-     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="h3">
-     <xsl:attribute name="font-size">1.17em</xsl:attribute>
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="space-before">1em</xsl:attribute>
-     <xsl:attribute name="space-after">1em</xsl:attribute>
-     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
-     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="h4">
-     <xsl:attribute name="font-size">1em</xsl:attribute>
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="space-before">1.17em</xsl:attribute>
-     <xsl:attribute name="space-after">1.17em</xsl:attribute>
-     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
-     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="h5">
-     <xsl:attribute name="font-size">0.83em</xsl:attribute>
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="space-before">1.33em</xsl:attribute>
-     <xsl:attribute name="space-after">1.33em</xsl:attribute>
-     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
-     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="h6">
-     <xsl:attribute name="font-size">0.67em</xsl:attribute>
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="space-before">1.67em</xsl:attribute>
-     <xsl:attribute name="space-after">1.67em</xsl:attribute>
-     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
-     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="p">
-     <xsl:attribute name="space-before">.4em</xsl:attribute>
-     <xsl:attribute name="space-after">.4em</xsl:attribute>
-     <!-- e.g.,
-     <xsl:attribute name="text-indent">1em</xsl:attribute>
-     -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="p-initial" use-attribute-sets="p">
-     <!-- initial paragraph, preceded by h1..6 or div -->
-     <!-- e.g.,
-     <xsl:attribute name="text-indent">0em</xsl:attribute>
-     -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="p-initial-first" use-attribute-sets="p-initial">
-     <!-- initial paragraph, first child of div, body or td -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="blockquote">
-     <xsl:attribute name="start-indent">inherited-property-value(start-indent) +
-24pt</xsl:attribute>
-     <xsl:attribute name="end-indent">inherited-property-value(end-indent) +
-24pt</xsl:attribute>
-     <xsl:attribute name="space-before">1em</xsl:attribute>
-     <xsl:attribute name="space-after">1em</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="pre">
-     <xsl:attribute name="font-size">0.83em</xsl:attribute>
-     <xsl:attribute name="font-family">monospace</xsl:attribute>
-     <xsl:attribute name="white-space">pre</xsl:attribute>
-     <xsl:attribute name="space-before">1em</xsl:attribute>
-     <xsl:attribute name="space-after">1em</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="address">
-     <xsl:attribute name="font-style">italic</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="hr">
-     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template> inset</xsl:attribute>
-     <xsl:attribute name="space-before">0.67em</xsl:attribute>
-     <xsl:attribute name="space-after">0.67em</xsl:attribute>
-   </xsl:attribute-set>
-   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        List
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:attribute-set name="ul">
-     <xsl:attribute name="space-before">1em</xsl:attribute>
-     <xsl:attribute name="space-after">1em</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="ul-nested">
-     <xsl:attribute name="space-before">0pt</xsl:attribute>
-     <xsl:attribute name="space-after">0pt</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="ol">
-     <xsl:attribute name="space-before">1em</xsl:attribute>
-     <xsl:attribute name="space-after">1em</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="ol-nested">
-     <xsl:attribute name="space-before">0pt</xsl:attribute>
-     <xsl:attribute name="space-after">0pt</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="ul-li">
-     <!-- for (unordered)fo:list-item -->
-     <xsl:attribute name="relative-align">baseline</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="ol-li">
-     <!-- for (ordered)fo:list-item -->
-     <xsl:attribute name="relative-align">baseline</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="dl">
-     <xsl:attribute name="space-before">1em</xsl:attribute>
-     <xsl:attribute name="space-after">1em</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="dt">
-     <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
-     <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="dd">
-     <xsl:attribute name="start-indent">inherited-property-value(start-indent) +
-24pt</xsl:attribute>
-   </xsl:attribute-set>
-   <!-- list-item-label format for each nesting level -->
-   <xsl:param name="ul-label-1">&#x2022;</xsl:param>
-   <xsl:attribute-set name="ul-label-1">
-     <xsl:attribute name="font">1em serif</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:param name="ul-label-2">&#x25e6;</xsl:param>
-   <xsl:attribute-set name="ul-label-2">
-     <xsl:attribute name="font">0.67em monospace</xsl:attribute>
-     <xsl:attribute name="baseline-shift">0.25em</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:param name="ul-label-3">&#x2012;</xsl:param>
-   <xsl:attribute-set name="ul-label-3">
-     <xsl:attribute name="font">bold 0.9em sans-serif</xsl:attribute>
-     <xsl:attribute name="baseline-shift">0.05em</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:param name="ol-label-1">1.</xsl:param>
-   <xsl:attribute-set name="ol-label-1"/>
-   <xsl:param name="ol-label-2">a.</xsl:param>
-   <xsl:attribute-set name="ol-label-2"/>
-   <xsl:param name="ol-label-3">i.</xsl:param>
-   <xsl:attribute-set name="ol-label-3"/>
-   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        Table
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:attribute-set name="inside-table">
-     <!-- prevent unwanted inheritance -->
-     <xsl:attribute name="start-indent">0pt</xsl:attribute>
-     <xsl:attribute name="end-indent">0pt</xsl:attribute>
-     <xsl:attribute name="text-indent">0pt</xsl:attribute>
-     <xsl:attribute name="last-line-end-indent">0pt</xsl:attribute>
-     <xsl:attribute name="text-align">start</xsl:attribute>
-<!--      not Supported
-     <xsl:attribute name="text-align-last">relative</xsl:attribute>-->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="table-and-caption">
-     <!-- horizontal alignment of table itself
-     <xsl:attribute name="text-align">center</xsl:attribute>
-     -->
-     <!-- vertical alignment in table-cell -->
-     <xsl:attribute name="display-align">center</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="table">
-   <!--
-     <xsl:attribute name="border-collapse">separate</xsl:attribute>
-     <xsl:attribute name="border-spacing"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="2"/></xsl:call-template></xsl:attribute>
-     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
-     <xsl:attribute name="border-style">outset</xsl:attribute>
-     -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="table-caption" use-attribute-sets="inside-table">
-     <xsl:attribute name="text-align">center</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="table-column">
-   </xsl:attribute-set>
-   <xsl:attribute-set name="thead" use-attribute-sets="inside-table">
-   </xsl:attribute-set>
-   <xsl:attribute-set name="tfoot" use-attribute-sets="inside-table">
-   </xsl:attribute-set>
-   <xsl:attribute-set name="tbody" use-attribute-sets="inside-table">
-   </xsl:attribute-set>
-   <xsl:attribute-set name="tr">
-   </xsl:attribute-set>
-   <xsl:attribute-set name="th">
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="text-align">center</xsl:attribute>
-     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
-     <!--
-     <xsl:attribute name="border-style">inset</xsl:attribute>
-     -->
-     <xsl:attribute name="padding"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="td">
-     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
-     <!--
-     <xsl:attribute name="border-style">inset</xsl:attribute>
-     -->
-     <xsl:attribute name="padding"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
-   </xsl:attribute-set>
-   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        Inline-level
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:attribute-set name="b">
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="strong">
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="strong-em">
-     <xsl:attribute name="font-weight">bold</xsl:attribute>
-     <xsl:attribute name="font-style">italic</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="i">
-     <xsl:attribute name="font-style">italic</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="cite">
-     <xsl:attribute name="font-style">italic</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="em">
-     <xsl:attribute name="font-style">italic</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="var">
-     <xsl:attribute name="font-style">italic</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="dfn">
-     <xsl:attribute name="font-style">italic</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="tt">
-     <xsl:attribute name="font-family">monospace</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="code">
-     <xsl:attribute name="font-family">monospace</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="kbd">
-     <xsl:attribute name="font-family">monospace</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="samp">
-     <xsl:attribute name="font-family">monospace</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="big">
-     <xsl:attribute name="font-size">larger</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="small">
-     <xsl:attribute name="font-size">smaller</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="sub">
-     <xsl:attribute name="baseline-shift">sub</xsl:attribute>
-     <xsl:attribute name="font-size">smaller</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="sup">
-     <xsl:attribute name="baseline-shift">super</xsl:attribute>
-     <xsl:attribute name="font-size">smaller</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="s">
-     <xsl:attribute name="text-decoration">line-through</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="strike">
-     <xsl:attribute name="text-decoration">line-through</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="del">
-     <xsl:attribute name="text-decoration">line-through</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="u">
-     <xsl:attribute name="text-decoration">underline</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="ins">
-     <xsl:attribute name="text-decoration">underline</xsl:attribute>
-   </xsl:attribute-set>
-   <xsl:attribute-set name="abbr">
-     <!-- e.g.,
-     <xsl:attribute name="font-variant">small-caps</xsl:attribute>
-     <xsl:attribute name="letter-spacing">0.1em</xsl:attribute>
-     -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="acronym">
-     <!-- e.g.,
-     <xsl:attribute name="font-variant">small-caps</xsl:attribute>
-     <xsl:attribute name="letter-spacing">0.1em</xsl:attribute>
-     -->
-   </xsl:attribute-set>
-   <xsl:attribute-set name="q"/>
-   <xsl:attribute-set name="q-nested"/>
-   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        Image
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:attribute-set name="img">
-   </xsl:attribute-set>
-   <xsl:attribute-set name="img-link">
-     <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="2"/></xsl:call-template> solid</xsl:attribute>
-   </xsl:attribute-set>
-   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        Link
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:attribute-set name="a-link">
-     <xsl:attribute name="text-decoration">underline</xsl:attribute>
-     <xsl:attribute name="color">blue</xsl:attribute>
-   </xsl:attribute-set>
+  <xsl:attribute-set name="h1">
+    <xsl:attribute name="font-size">2em</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="space-before">0.5em</xsl:attribute>
+    <xsl:attribute name="space-after">0.5em</xsl:attribute>
+    <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+    <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+  </xsl:attribute-set>
+    <xsl:attribute-set name="h2">
+    <xsl:attribute name="font-size">1.5em</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="space-before">0.5em</xsl:attribute>
+    <xsl:attribute name="space-after">0.5em</xsl:attribute>
+    <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+    <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="h3">
+    <xsl:attribute name="font-size">1.17em</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="space-before">1em</xsl:attribute>
+    <xsl:attribute name="space-after">1em</xsl:attribute>
+    <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+    <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="h4">
+    <xsl:attribute name="font-size">1em</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="space-before">1.17em</xsl:attribute>
+    <xsl:attribute name="space-after">1.17em</xsl:attribute>
+    <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+    <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="h5">
+    <xsl:attribute name="font-size">0.83em</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="space-before">1.33em</xsl:attribute>
+    <xsl:attribute name="space-after">1.33em</xsl:attribute>
+    <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+    <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="h6">
+    <xsl:attribute name="font-size">0.67em</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="space-before">1.67em</xsl:attribute>
+    <xsl:attribute name="space-after">1.67em</xsl:attribute>
+    <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+    <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="p">
+    <xsl:attribute name="space-before">.4em</xsl:attribute>
+    <xsl:attribute name="space-after">.4em</xsl:attribute>
+    <!-- e.g.,
+    <xsl:attribute name="text-indent">1em</xsl:attribute>
+    -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="p-initial" use-attribute-sets="p">
+    <!-- initial paragraph, preceded by h1..6 or div -->
+    <!-- e.g.,
+    <xsl:attribute name="text-indent">0em</xsl:attribute>
+    -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="p-initial-first" use-attribute-sets="p-initial">
+    <!-- initial paragraph, first child of div, body or td -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="blockquote">
+    <xsl:attribute name="start-indent">inherited-property-value(start-indent) +
+    24pt</xsl:attribute>
+    <xsl:attribute name="end-indent">inherited-property-value(end-indent) +
+    24pt</xsl:attribute>
+    <xsl:attribute name="space-before">1em</xsl:attribute>
+    <xsl:attribute name="space-after">1em</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="pre">
+    <xsl:attribute name="font-size">0.83em</xsl:attribute>
+    <xsl:attribute name="font-family">monospace</xsl:attribute>
+    <xsl:attribute name="white-space">pre</xsl:attribute>
+    <xsl:attribute name="space-before">1em</xsl:attribute>
+    <xsl:attribute name="space-after">1em</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="address">
+    <xsl:attribute name="font-style">italic</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="hr">
+    <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template> inset</xsl:attribute>
+    <xsl:attribute name="space-before">0.67em</xsl:attribute>
+    <xsl:attribute name="space-after">0.67em</xsl:attribute>
+  </xsl:attribute-set>
+  <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  List
+  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
+  <xsl:attribute-set name="ul">
+    <xsl:attribute name="space-before">1em</xsl:attribute>
+    <xsl:attribute name="space-after">1em</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="ul-nested">
+    <xsl:attribute name="space-before">0pt</xsl:attribute>
+    <xsl:attribute name="space-after">0pt</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="ol">
+    <xsl:attribute name="space-before">1em</xsl:attribute>
+    <xsl:attribute name="space-after">1em</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="ol-nested">
+    <xsl:attribute name="space-before">0pt</xsl:attribute>
+    <xsl:attribute name="space-after">0pt</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="ul-li">
+    <!-- for (unordered)fo:list-item -->
+    <xsl:attribute name="relative-align">baseline</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="ol-li">
+    <!-- for (ordered)fo:list-item -->
+    <xsl:attribute name="relative-align">baseline</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="dl">
+    <xsl:attribute name="space-before">1em</xsl:attribute>
+    <xsl:attribute name="space-after">1em</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="dt">
+    <xsl:attribute name="keep-with-next.within-column">always</xsl:attribute>
+    <xsl:attribute name="keep-together.within-column">always</xsl:attribute>
+  </xsl:attribute-set>
+    <xsl:attribute-set name="dd">
+    <xsl:attribute name="start-indent">inherited-property-value(start-indent) + 24pt</xsl:attribute>
+  </xsl:attribute-set>
+  <!-- list-item-label format for each nesting level -->
+  <xsl:param name="ul-label-1">&amp;#x2022;</xsl:param>
+  <xsl:attribute-set name="ul-label-1">
+    <xsl:attribute name="font">1em serif</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:param name="ul-label-2">&amp;#x25e6;</xsl:param>
+  <xsl:attribute-set name="ul-label-2">
+    <xsl:attribute name="font">0.67em monospace</xsl:attribute>
+    <xsl:attribute name="baseline-shift">0.25em</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:param name="ul-label-3">&amp;#x2012;</xsl:param>
+  <xsl:attribute-set name="ul-label-3">
+    <xsl:attribute name="font">bold 0.9em sans-serif</xsl:attribute>
+    <xsl:attribute name="baseline-shift">0.05em</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:param name="ol-label-1">1.</xsl:param>
+  <xsl:attribute-set name="ol-label-1"/>
+  <xsl:param name="ol-label-2">a.</xsl:param>
+  <xsl:attribute-set name="ol-label-2"/>
+  <xsl:param name="ol-label-3">i.</xsl:param>
+  <xsl:attribute-set name="ol-label-3"/>
+  <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  Table
+  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
+  <xsl:attribute-set name="inside-table">
+    <!-- prevent unwanted inheritance -->
+    <xsl:attribute name="start-indent">0pt</xsl:attribute>
+    <xsl:attribute name="end-indent">0pt</xsl:attribute>
+    <xsl:attribute name="text-indent">0pt</xsl:attribute>
+    <xsl:attribute name="last-line-end-indent">0pt</xsl:attribute>
+    <xsl:attribute name="text-align">start</xsl:attribute>
+    <!--      not Supported
+    <xsl:attribute name="text-align-last">relative</xsl:attribute>-->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="table-and-caption">
+    <!-- horizontal alignment of table itself
+    <xsl:attribute name="text-align">center</xsl:attribute>
+    -->
+    <!-- vertical alignment in table-cell -->
+    <xsl:attribute name="display-align">center</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="table">
+    <!--
+    <xsl:attribute name="border-collapse">separate</xsl:attribute>
+    <xsl:attribute name="border-spacing"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="2"/></xsl:call-template></xsl:attribute>
+    <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
+    <xsl:attribute name="border-style">outset</xsl:attribute>
+    -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="table-caption" use-attribute-sets="inside-table">
+    <xsl:attribute name="text-align">center</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="table-column" />
+  <xsl:attribute-set name="thead" use-attribute-sets="inside-table"/>
+  <xsl:attribute-set name="tfoot" use-attribute-sets="inside-table"/>
+  <xsl:attribute-set name="tbody" use-attribute-sets="inside-table"/>
+  <xsl:attribute-set name="tr"/>
+  <xsl:attribute-set name="th">
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="text-align">center</xsl:attribute>
+    <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
+    <!--
+    <xsl:attribute name="border-style">inset</xsl:attribute>
+    -->
+    <xsl:attribute name="padding"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="td">
+    <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
+    <!--
+    <xsl:attribute name="border-style">inset</xsl:attribute>
+    -->
+    <xsl:attribute name="padding"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="1"/></xsl:call-template></xsl:attribute>
+  </xsl:attribute-set>
+  <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  Inline-level
+  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
+  <xsl:attribute-set name="b">
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="strong">
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="strong-em">
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="font-style">italic</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="i">
+    <xsl:attribute name="font-style">italic</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="cite">
+    <xsl:attribute name="font-style">italic</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="em">
+    <xsl:attribute name="font-style">italic</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="var">
+    <xsl:attribute name="font-style">italic</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="dfn">
+    <xsl:attribute name="font-style">italic</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="tt">
+    <xsl:attribute name="font-family">monospace</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="code">
+    <xsl:attribute name="font-family">monospace</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="kbd">
+    <xsl:attribute name="font-family">monospace</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="samp">
+    <xsl:attribute name="font-family">monospace</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="big">
+    <xsl:attribute name="font-size">larger</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="small">
+    <xsl:attribute name="font-size">smaller</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="sub">
+    <xsl:attribute name="baseline-shift">sub</xsl:attribute>
+    <xsl:attribute name="font-size">smaller</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="sup">
+    <xsl:attribute name="baseline-shift">super</xsl:attribute>
+    <xsl:attribute name="font-size">smaller</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="s">
+    <xsl:attribute name="text-decoration">line-through</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="strike">
+    <xsl:attribute name="text-decoration">line-through</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="del">
+    <xsl:attribute name="text-decoration">line-through</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="u">
+    <xsl:attribute name="text-decoration">underline</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="ins">
+    <xsl:attribute name="text-decoration">underline</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:attribute-set name="abbr">
+    <!-- e.g.,
+    <xsl:attribute name="font-variant">small-caps</xsl:attribute>
+    <xsl:attribute name="letter-spacing">0.1em</xsl:attribute>
+    -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="acronym">
+    <!-- e.g.,
+    <xsl:attribute name="font-variant">small-caps</xsl:attribute>
+    <xsl:attribute name="letter-spacing">0.1em</xsl:attribute>
+    -->
+  </xsl:attribute-set>
+  <xsl:attribute-set name="q"/>
+  <xsl:attribute-set name="q-nested"/>
+  <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  Image
+  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
+  <xsl:attribute-set name="img"/>
+  <xsl:attribute-set name="img-link">
+    <xsl:attribute name="border"><xsl:call-template name="pxTopt"><xsl:with-param name="px" select="2"/></xsl:call-template> solid</xsl:attribute>
+  </xsl:attribute-set>
+  <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  Link
+  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
+  <xsl:attribute-set name="a-link">
+    <xsl:attribute name="text-decoration">underline</xsl:attribute>
+    <xsl:attribute name="color">blue</xsl:attribute>
+  </xsl:attribute-set>
  
 <!--======================================================================
        Templates
  
 =======================================================================-->
-   <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        Root
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:template match="/html | /html:html">
-     <fo:root xsl:use-attribute-sets="root">
-       <xsl:call-template name="process-common-attributes"/>
-       <xsl:call-template name="make-layout-master-set"/>
-		 <xsl:if test="$includeTocBookmarks">
-		 	 <xsl:call-template name="toc-bookmarks-root"/>
-		 </xsl:if>
-       <xsl:apply-templates/>
-     </fo:root>
-   </xsl:template>
-	<!-- Catch invalidly nested html documents, and treat like a <div> -->
-	<xsl:template match="html[parent::*] | html:html[parent::html:*]">
-		<fo:block>
-        <xsl:apply-templates select="body/node() | html:body/node()"/>
-      </fo:block>
-	</xsl:template>
-   <xsl:template name="make-layout-master-set">
-     <fo:layout-master-set>
-       <fo:simple-page-master master-name="all-pages" xsl:use-attribute-sets="page">
-         <fo:region-body column-count="{$column-count}" column-gap="{$column-gap}" margin-bottom="{$page-margin-bottom}" margin-left="{$page-margin-left}" margin-right="{$page-margin-right}" margin-top="{$page-margin-top}"/>
-         <xsl:choose>
-           <xsl:when test="$writing-mode = 'tb-rl'">
-             <fo:region-before extent="{$page-margin-right}" precedence="true"/>
-             <fo:region-after extent="{$page-margin-left}" precedence="true"/>
-             <fo:region-start display-align="before" extent="{$page-margin-top}" region-name="page-header" writing-mode="lr-tb"/>
-             <fo:region-end display-align="after" extent="{$page-margin-bottom}" region-name="page-footer" writing-mode="lr-tb"/>
-           </xsl:when>
-           <xsl:when test="$writing-mode = 'rl-tb'">
-             <fo:region-before display-align="before" extent="{$page-margin-top}" region-name="page-header"/>
-             <fo:region-after display-align="after" extent="{$page-margin-bottom}" region-name="page-footer"/>
-             <fo:region-start extent="{$page-margin-right}"/>
-             <fo:region-end extent="{$page-margin-left}"/>
-           </xsl:when>
-           <xsl:otherwise><!-- $writing-mode = 'lr-tb' -->
-             <fo:region-before display-align="before" extent="{$page-margin-top}" region-name="page-header"/>
-             <fo:region-after display-align="after" extent="{$page-margin-bottom}" region-name="page-footer"/>
-             <fo:region-start extent="{$page-margin-left}"/>
-             <fo:region-end extent="{$page-margin-bottom}"/>
-           </xsl:otherwise>
-         </xsl:choose>
-       </fo:simple-page-master>
-     </fo:layout-master-set>
-   </xsl:template>
-   <xsl:template match="head | script | html:head | html:script"/>
-	<!-- Table of Contents -->
-	<xsl:template name="toc-bookmarks-root">
-		<fo:bookmark-tree>
-			<xsl:apply-templates mode="toc-bookmarks" select=".//*[local-name() = concat('h',substring($tocHeadingLevels,1,1))] | .//html:*[local-name() = concat('h',substring($tocHeadingLevels,1,1))]"/>
-		</fo:bookmark-tree>
-	</xsl:template>
-	<xsl:template match="h1 | html:h1 | h2 | html:h2 | h3 | html:h3 | h4 | html:h4 | h5 | html:h5 | h6" mode="toc">
-		<xsl:variable name="offset" select="string-length(substring-before($tocHeadingLevels,substring(local-name(),2,1))) + 1"/>
-		<fo:block start-indent="{$offset}em" text-align-last="justify" text-indent="-{$offset}em">
-			<fo:inline padding-start="{$offset}em">
-				<fo:basic-link internal-destination="{generate-id()}">
-				<xsl:value-of select="normalize-space(.)"/>
-				<fo:leader leader-pattern="dots"/>
-				<fo:page-number-citation ref-id="{generate-id()}"/>
-				</fo:basic-link>
-			</fo:inline>
-		</fo:block>
-	</xsl:template>
-	<xsl:template match="h1 | html:h1 | h2 | html:h2 | h3 | html:h3 | h4 | html:h4 | h5 | html:h5 | h6" mode="toc-bookmarks">
-		<xsl:variable name="offset" select="string-length(substring-before($tocHeadingLevels,substring(local-name(),2,1))) + 1"/>
-		<xsl:variable name="currentLocalName" select="local-name()"/>
-		<fo:bookmark internal-destination="{generate-id()}">
-			<fo:bookmark-title><xsl:value-of select="normalize-space(.)"/></fo:bookmark-title>
-			<xsl:apply-templates mode="toc-bookmarks" select="following::*[local-name() = concat('h',substring($tocHeadingLevels,$offset + 1,1)) and generate-id(preceding::*[local-name() = $currentLocalName][1]) = generate-id(current())] | following::html:*[local-name() = concat('h',substring($tocHeadingLevels,$offset + 1,1)) and generate-id(preceding::html:*[local-name() = $currentLocalName][1]) = generate-id(current())]"/>
-		</fo:bookmark>
-	</xsl:template>
-	<!-- /Table of Contents -->
+  <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    Root
+  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
+  <xsl:template match="/html | /html:html">
+    <fo:root xsl:use-attribute-sets="root">
+      <xsl:call-template name="process-common-attributes"/>
+      <xsl:call-template name="make-layout-master-set"/>
+      <xsl:if test="$includeTocBookmarks">
+        <xsl:call-template name="toc-bookmarks-root"/>
+      </xsl:if>
+      <xsl:apply-templates/>
+    </fo:root>
+  </xsl:template>
+  <!-- Catch invalidly nested html documents, and treat like a <div> -->
+  <xsl:template match="html[parent::*] | html:html[parent::html:*]">
+    <fo:block>
+      <xsl:apply-templates select="body/node() | html:body/node()"/>
+    </fo:block>
+  </xsl:template>
+  <xsl:template name="make-layout-master-set">
+    <fo:layout-master-set>
+      <fo:simple-page-master master-name="all-pages" xsl:use-attribute-sets="page">
+        <fo:region-body column-count="{$column-count}" column-gap="{$column-gap}" margin-bottom="{$page-margin-bottom}" margin-left="{$page-margin-left}" margin-right="{$page-margin-right}" margin-top="{$page-margin-top}"/>
+        <xsl:choose>
+          <xsl:when test="$writing-mode = 'tb-rl'">
+            <fo:region-before extent="{$page-margin-right}" precedence="true"/>
+            <fo:region-after extent="{$page-margin-left}" precedence="true"/>
+            <fo:region-start display-align="before" extent="{$page-margin-top}" region-name="page-header" writing-mode="lr-tb"/>
+            <fo:region-end display-align="after" extent="{$page-margin-bottom}" region-name="page-footer" writing-mode="lr-tb"/>
+          </xsl:when>
+          <xsl:when test="$writing-mode = 'rl-tb'">
+            <fo:region-before display-align="before" extent="{$page-margin-top}" region-name="page-header"/>
+            <fo:region-after display-align="after" extent="{$page-margin-bottom}" region-name="page-footer"/>
+            <fo:region-start extent="{$page-margin-right}"/>
+            <fo:region-end extent="{$page-margin-left}"/>
+          </xsl:when>
+          <xsl:otherwise><!-- $writing-mode = 'lr-tb' -->
+            <fo:region-before display-align="before" extent="{$page-margin-top}" region-name="page-header"/>
+            <fo:region-after display-align="after" extent="{$page-margin-bottom}" region-name="page-footer"/>
+            <fo:region-start extent="{$page-margin-left}"/>
+            <fo:region-end extent="{$page-margin-bottom}"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </fo:simple-page-master>
+    </fo:layout-master-set>
+  </xsl:template>
+  <xsl:template match="head | script | html:head | html:script"/>
+    <!-- Table of Contents -->
+    <xsl:template name="toc-bookmarks-root">
+        <fo:bookmark-tree>
+            <xsl:apply-templates mode="toc-bookmarks" select=".//*[local-name() = concat('h',substring($tocHeadingLevels,1,1))] | .//html:*[local-name() = concat('h',substring($tocHeadingLevels,1,1))]"/>
+        </fo:bookmark-tree>
+    </xsl:template>
+    <xsl:template match="h1 | html:h1 | h2 | html:h2 | h3 | html:h3 | h4 | html:h4 | h5 | html:h5 | h6" mode="toc">
+        <xsl:variable name="offset" select="string-length(substring-before($tocHeadingLevels,substring(local-name(),2,1))) + 1"/>
+        <fo:block start-indent="{$offset}em" text-align-last="justify" text-indent="-{$offset}em">
+            <fo:inline padding-start="{$offset}em">
+                <fo:basic-link internal-destination="{generate-id()}">
+                <xsl:value-of select="normalize-space(.)"/>
+                <fo:leader leader-pattern="dots"/>
+                <fo:page-number-citation ref-id="{generate-id()}"/>
+                </fo:basic-link>
+            </fo:inline>
+        </fo:block>
+    </xsl:template>
+    <xsl:template match="h1 | html:h1 | h2 | html:h2 | h3 | html:h3 | h4 | html:h4 | h5 | html:h5 | h6" mode="toc-bookmarks">
+        <xsl:variable name="offset" select="string-length(substring-before($tocHeadingLevels,substring(local-name(),2,1))) + 1"/>
+        <xsl:variable name="currentLocalName" select="local-name()"/>
+        <fo:bookmark internal-destination="{generate-id()}">
+            <fo:bookmark-title><xsl:value-of select="normalize-space(.)"/></fo:bookmark-title>
+            <xsl:apply-templates mode="toc-bookmarks" select="following::*[local-name() = concat('h',substring($tocHeadingLevels,$offset + 1,1)) and generate-id(preceding::*[local-name() = $currentLocalName][1]) = generate-id(current())] | following::html:*[local-name() = concat('h',substring($tocHeadingLevels,$offset + 1,1)) and generate-id(preceding::html:*[local-name() = $currentLocalName][1]) = generate-id(current())]"/>
+        </fo:bookmark>
+    </xsl:template>
+    <!-- /Table of Contents -->
    <xsl:template match="body | html:body">
      <fo:page-sequence master-reference="all-pages">
        <fo:static-content flow-name="page-header">
@@ -501,25 +529,25 @@ fo:block -->
          </fo:block>
        </fo:static-content>
        <fo:flow flow-name="xsl-region-body">
-			<xsl:if test="$includeTocPrinted and (.//*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#'] | .//html:*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#'])">
-				<fo:block font-weight="bold" space-after="14pt" space-before="14pt" text-align="center">
-					<xsl:choose>
-						<xsl:when test="string-length($tocTitle) > 0">
-								<fo:inline><xsl:value-of select="$tocTitle"/></fo:inline>
-						</xsl:when>
-						<xsl:otherwise>
-							<fo:inline>Table of Contents</fo:inline>
-						</xsl:otherwise>
-					</xsl:choose>
-				</fo:block>
-	       	<xsl:apply-templates mode="toc" select=".//*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#'] | .//html:*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#']"/>
-			</xsl:if>
-         <fo:block xsl:use-attribute-sets="body" id="fo-top">
-           <xsl:call-template name="process-common-attributes"/>
-           <xsl:apply-templates/>
-         </fo:block>
-       </fo:flow>
-     </fo:page-sequence>
+            <xsl:if test="$includeTocPrinted and (.//*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#'] | .//html:*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#'])">
+                <fo:block font-weight="bold" space-after="14pt" space-before="14pt" text-align="center">
+                    <xsl:choose>
+                        <xsl:when test="string-length($tocTitle) &gt; 0">
+              <fo:inline><xsl:value-of select="$tocTitle"/></fo:inline>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <fo:inline>Table of Contents</fo:inline>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </fo:block>
+            <xsl:apply-templates mode="toc" select=".//*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#'] | .//html:*[translate(local-name(),$tocHeadingLevels,'#######') = 'h#']"/>
+            </xsl:if>
+      <fo:block id="fo-top" xsl:use-attribute-sets="body">
+        <xsl:call-template name="process-common-attributes"/>
+        <xsl:apply-templates/>
+      </fo:block>
+    </fo:flow>
+    </fo:page-sequence>
    </xsl:template>
    <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     process common attributes and children
@@ -597,7 +625,7 @@ fo:block -->
        <xsl:variable name="value">
          <xsl:choose>
            <xsl:when test="contains($value-and-rest, ';')">
-             <xsl:value-of select="normalize-space(substring-before(                                 $value-and-rest, ';'))"/>
+             <xsl:value-of select="normalize-space(substring-before($value-and-rest, ';'))"/>
            </xsl:when>
            <xsl:otherwise>
              <xsl:value-of select="$value-and-rest"/>
@@ -610,7 +638,7 @@ fo:block -->
              <xsl:value-of select="$value"/>
            </xsl:attribute>
          </xsl:when>
-         <xsl:when test="$name = 'vertical-align' and (                   self::table or self::caption or             self::thead or self::tfoot or     self::tbody or self::colgroup or self::col or self::tr or                                  self::th or self::td)">
+         <xsl:when test="$name = 'vertical-align' and (self::table or self::caption or self::thead or self::tfoot or self::tbody or self::colgroup or self::col or self::tr or self::th or self::td)">
            <xsl:choose>
              <xsl:when test="$value = 'top'">
                <xsl:attribute name="display-align">before</xsl:attribute>
@@ -706,11 +734,11 @@ fo:block -->
    <xsl:template name="process-pre">
      <xsl:call-template name="process-common-attributes"/>
      <!-- remove leading CR/LF/CRLF char -->
-     <xsl:variable name="crlf"><xsl:text>&#xd;
+     <xsl:variable name="crlf"><xsl:text>&amp;#xd;
 </xsl:text></xsl:variable>
      <xsl:variable name="lf"><xsl:text>
 </xsl:text></xsl:variable>
-     <xsl:variable name="cr"><xsl:text>&#xd;</xsl:text></xsl:variable>
+     <xsl:variable name="cr"><xsl:text>&amp;#xd;</xsl:text></xsl:variable>
      <xsl:for-each select="node()">
        <xsl:choose>
          <xsl:when test="position() = 1 and self::text()">
@@ -785,7 +813,7 @@ fo:block -->
        <xsl:when test="@style">
          <xsl:variable name="s" select="concat(';', translate(normalize-space(@style),' ',''))"/>
          <xsl:choose>
-           <xsl:when test="contains($s, ';width:') or          contains($s, ';height:') or contains($s, ';position:absolute') or contains($s, ';position:fixed') or contains($s, ';writing-mode:')">true</xsl:when>
+           <xsl:when test="contains($s, ';width:') or contains($s, ';height:') or contains($s, ';position:absolute') or contains($s, ';position:fixed') or contains($s, ';writing-mode:')">true</xsl:when>
            <xsl:otherwise>false</xsl:otherwise>
          </xsl:choose>
        </xsl:when>
@@ -951,7 +979,7 @@ fo:block -->
    </xsl:if>
      <xsl:if test="@border or @frame">
        <xsl:choose>
-         <xsl:when test="@border > 0">
+         <xsl:when test="@border &gt; 0">
            <xsl:attribute name="border">
              <xsl:call-template name="pxTopt"><xsl:with-param name="px" select="@border"/></xsl:call-template></xsl:attribute>
          </xsl:when>
@@ -961,12 +989,10 @@ fo:block -->
            <xsl:attribute name="border-style">hidden</xsl:attribute>
          </xsl:when>
          <xsl:when test="@frame = 'above'">
-           <xsl:attribute name="border-style">outset hidden hidden
-hidden</xsl:attribute>
+           <xsl:attribute name="border-style">outset hidden hidden hidden</xsl:attribute>
          </xsl:when>
          <xsl:when test="@frame = 'below'">
-           <xsl:attribute name="border-style">hidden hidden outset
-hidden</xsl:attribute>
+           <xsl:attribute name="border-style">hidden hidden outset hidden</xsl:attribute>
          </xsl:when>
          <xsl:when test="@frame = 'hsides'">
            <xsl:attribute name="border-style">outset hidden</xsl:attribute>
@@ -975,12 +1001,10 @@ hidden</xsl:attribute>
            <xsl:attribute name="border-style">hidden outset</xsl:attribute>
          </xsl:when>
          <xsl:when test="@frame = 'lhs'">
-           <xsl:attribute name="border-style">hidden hidden hidden
-outset</xsl:attribute>
+           <xsl:attribute name="border-style">hidden hidden hidden outset</xsl:attribute>
          </xsl:when>
          <xsl:when test="@frame = 'rhs'">
-           <xsl:attribute name="border-style">hidden outset hidden
-hidden</xsl:attribute>
+           <xsl:attribute name="border-style">hidden outset hidden hidden</xsl:attribute>
          </xsl:when>
          <xsl:otherwise>
            <xsl:attribute name="border-style">solid</xsl:attribute><!--Bob changed this from outset-->
@@ -1172,10 +1196,10 @@ hidden</xsl:attribute>
    </xsl:template>
    <xsl:template name="process-col-width">
      <xsl:param name="width"/>
-		<xsl:variable name="attributeName"><xsl:choose>
-	  <xsl:when test="ancestor-or-self::colgroup | ancestor-or-self::html:colgroup | ancestor-or-self::col | ancestor-or-self::html:col">column-width</xsl:when>
-		<xsl:otherwise>width</xsl:otherwise>
-		</xsl:choose></xsl:variable>
+        <xsl:variable name="attributeName"><xsl:choose>
+      <xsl:when test="ancestor-or-self::colgroup | ancestor-or-self::html:colgroup | ancestor-or-self::col | ancestor-or-self::html:col">column-width</xsl:when>
+        <xsl:otherwise>width</xsl:otherwise>
+        </xsl:choose></xsl:variable>
      <xsl:if test="$width and $width != '0*'">
        <xsl:attribute name="{$attributeName}">
          <xsl:choose>
@@ -1377,7 +1401,7 @@ hidden</xsl:attribute>
    <!-- Capture the br tag and output an empty block containing a non-breaking space (Unicode 0xa0) -->
 
    <xsl:template match="br | html:br">
-      <fo:block line-height="0">&#160;</fo:block>
+      <fo:block line-height="0">&amp;#160;</fo:block>
    </xsl:template>
 
    <xsl:template match="q | html:q">
@@ -1431,9 +1455,8 @@ hidden</xsl:attribute>
      </fo:external-graphic>
    </xsl:template>
    <xsl:template name="process-img">
-     <xsl:attribute name="src">
- 
-<xsl:text>url('</xsl:text>[system-asset:embedded-image]<xsl:value-of select="@src"/>[/system-asset:embedded-image]<xsl:text>')</xsl:text>
+     <xsl:attribute name="src"> 
+    <xsl:text>url('</xsl:text>[system-asset:embedded-image]<xsl:value-of select="@src"/>[/system-asset:embedded-image]<xsl:text>')</xsl:text>
      </xsl:attribute>
      <xsl:if test="@alt">
        <xsl:attribute name="role">
@@ -1490,20 +1513,20 @@ hidden</xsl:attribute>
    <xsl:template match="button | html:button"/>
    <xsl:template match="style | html:style"/>
    <xsl:template match="iframe | html:iframe">
-		<xsl:if test="@src">
-			<xsl:variable name="newDoc" select="document(string(@src))"/>
-			<xsl:if test="count($newDoc/descendant-or-self::node()) = 0">
-				<fo:block xsl:use-attribute-sets="p">
-					<fo:inline color="#ff0000">Unable to load contents of IFRAME at this location in the original document. See original HTML document and notify an administrator.</fo:inline>
-			   </fo:block>
-			</xsl:if>
-			<xsl:apply-templates select="$newDoc"/>
-		</xsl:if>
-	</xsl:template>
+        <xsl:if test="@src">
+            <xsl:variable name="newDoc" select="document(string(@src))"/>
+            <xsl:if test="count($newDoc/descendant-or-self::node()) = 0">
+                <fo:block xsl:use-attribute-sets="p">
+                    <fo:inline color="#ff0000">Unable to load contents of IFRAME at this location in the original document. See original HTML document and notify an administrator.</fo:inline>
+               </fo:block>
+            </xsl:if>
+            <xsl:apply-templates select="$newDoc"/>
+        </xsl:if>
+    </xsl:template>
    <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         Link
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
-   <xsl:template match="a | html:a">
+   <xsl:template match="a | html:a">       
      <fo:inline>
        <xsl:call-template name="process-common-attributes-and-children"/>
      </fo:inline>
@@ -1515,46 +1538,65 @@ hidden</xsl:attribute>
    </xsl:template>
    <xsl:template name="process-a-link">
      <xsl:call-template name="process-common-attributes"/>
+
      <xsl:choose>
-       <xsl:when test="@href='#'"><!-- Linking to the top of the page without using an internal anchor -->
+       <!-- Linking to the top of the page without using an internal anchor -->
+       <xsl:when test="@href='#'">
          <xsl:attribute name="internal-destination">fo-top</xsl:attribute><!-- fo-top defined above in template match="body" -->
        </xsl:when>
-       <xsl:when test="starts-with(@href,'#')"><!-- Linking to the same page -->
+       <!-- Linking to the same page -->
+       <xsl:when test="starts-with(@href,'#')">
          <xsl:attribute name="internal-destination">
            <xsl:value-of select="substring-after(@href,'#')"/>
          </xsl:attribute>
        </xsl:when>
-       <xsl:when test="starts-with(@href, '/')"><!-- The link is internal to the CMS -->
-	       <xsl:choose>
-	         <xsl:when test="contains(@href, '#')"><!-- If it contains a #, we may need to rewrite the extension -->
-	           <xsl:choose>
-	             <xsl:when test="substring(substring-before(@href, '#'), string-length(substring-before(@href,'#')) - 3, 1) = '.' or substring(substring-before(@href, '#'), string-length(substring-before(@href,'#')) - 4, 1) = '.'">
-	             <!-- when the portion before the # ends with a .??? or .???? then it is probably a file extension
-	                  and we can use that for the link with just the beginning of the URL rewritten -->
-	               <xsl:attribute name="external-destination"><xsl:value-of select="$serverURL" /><xsl:value-of select="substring-after(@href, '/')"/></xsl:attribute>
-	             </xsl:when>
-	             <xsl:otherwise>
-	             <!-- If there isn't a file extension, then we default to html -->
-	               <xsl:attribute name="external-destination">
-	                 <xsl:value-of select="$serverURL" /><xsl:value-of select="substring-after(substring-before(@href, '#'), '/')"/>.html#<xsl:value-of select="substring-after(@href, '#')"/>
-	               </xsl:attribute>
-	       	     </xsl:otherwise>
-	       	   </xsl:choose>
-	       	 </xsl:when>
-	       	 <xsl:otherwise><!-- Meaning - the href does not contain a # -->
-	       	   <xsl:choose>
-	       	     <xsl:when test="substring(@href, string-length(@href) - 3, 1) = '.' or substring(@href, string-length(@href) - 4, 1) = '.'"><!--Check to see if there is a file extension-->
-	       	       <xsl:attribute name="external-destination"><xsl:value-of select="$serverURL" /><xsl:value-of select="substring-after(@href, '/')"/></xsl:attribute>
-	       	     </xsl:when>
-	       	     <xsl:otherwise>
-	       	       <xsl:attribute name="external-destination"><xsl:value-of select="$serverURL" /><xsl:value-of select="substring-after(@href, '/')"/>.html</xsl:attribute>
-	       	     </xsl:otherwise>
-	       	   </xsl:choose>
-	       	 </xsl:otherwise>
-	       </xsl:choose>
+       <!-- The link is internal to the CMS or same site (ie $currentSite) -->
+       <xsl:when test="starts-with(@href, '/') or starts-with(@href, $currentSiteName)">
+           <!-- If the @href is internal, same site, we need to remove $currentSiteName from the front. -->
+           <xsl:variable name="theHREF">
+              <xsl:choose>
+                <xsl:when test="starts-with(@href, $currentSiteName)">
+                   <xsl:value-of select="substring-after(@href, $currentSiteName)" />
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:value-of select="@href" />
+                </xsl:otherwise>
+              </xsl:choose>
+           </xsl:variable>           
+           <xsl:choose>
+             <xsl:when test="contains($theHREF, '#')"><!-- If it contains a #, we may need to rewrite the extension -->
+               <xsl:choose>
+                 <xsl:when test="substring(substring-before($theHREF, '#'), string-length(substring-before($theHREF,'#')) - 3, 1) = '.' or substring(substring-before($theHREF, '#'), string-length(substring-before($theHREF,'#')) - 4, 1) = '.'">
+                 <!-- when the portion before the # ends with a .??? or .???? then it is probably a file extension
+                      and we can use that for the link with just the beginning of the URL rewritten -->
+                   <xsl:attribute name="external-destination"><xsl:value-of select="$currentSiteURL"/><xsl:value-of select="substring-after($theHREF, '/')"/></xsl:attribute>
+                 </xsl:when>
+                 <xsl:otherwise>
+              <!-- If there isn't a file extension, then we default to html -->
+                   <xsl:attribute name="external-destination">
+                     <xsl:value-of select="$currentSiteURL"/><xsl:value-of select="substring-after(substring-before($theHREF, '#'), '/')"/><xsl:value-of select="$internalPageExt"/>#<xsl:value-of select="substring-after($theHREF, '#')"/>
+                   </xsl:attribute>
+                 </xsl:otherwise>
+               </xsl:choose>
+             </xsl:when>
+             <xsl:otherwise><!-- Meaning - the href does not contain a # -->
+        <xsl:choose>
+          <xsl:when test="substring($theHREF, string-length($theHREF) - 3, 1) = '.' or substring($theHREF, string-length($theHREF) - 4, 1) = '.'"><!--Check to see if there is a file extension-->
+            <xsl:attribute name="external-destination"><xsl:value-of select="$currentSiteURL"/><xsl:value-of select="substring-after($theHREF, '/')"/></xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="external-destination"><xsl:value-of select="$currentSiteURL"/><xsl:value-of select="substring-after($theHREF, '/')"/><xsl:value-of select="$internalPageExt"/></xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>               
+             </xsl:otherwise>
+           </xsl:choose>
         </xsl:when>
+        <!-- The link is internal to the CMS but cross-site (ie site://SOMEOTHERSITE) -->
+        <xsl:when test="starts-with(@href, 'site://') and starts-with(@href, $currentSiteName) = false">
+            <xsl:attribute name="external-destination">url('[system-asset]<xsl:value-of select="@href"/>[/system-asset]')</xsl:attribute>
+        </xsl:when>    
         <xsl:otherwise>
-         <xsl:attribute name="external-destination">url('<xsl:value-of select="@href"/>')</xsl:attribute>
+            <xsl:attribute name="external-destination">url('<xsl:value-of select="@href"/>')</xsl:attribute>
         </xsl:otherwise>
      </xsl:choose>
      <xsl:if test="@title">
@@ -1564,6 +1606,7 @@ hidden</xsl:attribute>
      </xsl:if>
      <xsl:apply-templates/>
    </xsl:template>
+   
    <!--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         Ruby
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
@@ -1592,23 +1635,24 @@ hidden</xsl:attribute>
        </xsl:if>
      </fo:inline-container>
    </xsl:template>
-<xsl:template match="system-page-display-name | html:system-page-display-name | system-page-title | html:system-page-title | system-page-summary | html:system-page-summary">
-<xsl:copy-of select="."/>
-</xsl:template>
-
-<!-- Convert pixel measurements to points based on pixelsPerInch param -->
-<xsl:template name="pxTopt">
-	<xsl:param name="px"/>
-	<xsl:variable name="fopResolution" select="72"/>
-	<!-- Assumes page size given in inches ['in' suffix] -->
-	<xsl:variable name="pageWidthInPt" select="(number(substring-before($page-width,'in')) - (number(substring-before($page-margin-left,'in')) + number(substring-before($page-margin-right,'in')))) * $fopResolution" />
-	<xsl:choose>
-		<xsl:when test="$fitToPageWidth and (number($px) div number($pixelsPerInch) * $fopResolution) > $pageWidthInPt">
-			<xsl:value-of select="concat(string($pageWidthInPt),'pt')"/>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:value-of select="concat(string(number($px) div number($pixelsPerInch) * $fopResolution),'pt')"/>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
+   
+  <xsl:template match="system-page-display-name | html:system-page-display-name | system-page-title | html:system-page-title | system-page-summary | html:system-page-summary">
+    <xsl:copy-of select="."/>
+  </xsl:template>
+  
+  <!-- Convert pixel measurements to points based on pixelsPerInch param -->
+  <xsl:template name="pxTopt">
+    <xsl:param name="px"/>
+    <xsl:variable name="fopResolution" select="72"/>
+    <!-- Assumes page size given in inches ['in' suffix] -->
+    <xsl:variable name="pageWidthInPt" select="(number(substring-before($page-width,'in')) - (number(substring-before($page-margin-left,'in')) + number(substring-before($page-margin-right,'in')))) * $fopResolution"/>
+    <xsl:choose>
+      <xsl:when test="$fitToPageWidth and (number($px) div number($pixelsPerInch) * $fopResolution) &gt; $pageWidthInPt">
+        <xsl:value-of select="concat(string($pageWidthInPt),'pt')"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="concat(string(number($px) div number($pixelsPerInch) * $fopResolution),'pt')"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 </xsl:stylesheet>
