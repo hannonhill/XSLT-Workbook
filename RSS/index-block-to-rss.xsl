@@ -131,9 +131,28 @@
 			<xsl:otherwise/>
 		</xsl:choose>
 	</xsl:template>
-	
+
 	<!-- Override link rewriting behavior of xhtml2escapedHtml for compatiblity with RSS 2.0 -->
-	<xsl:template match="@href|@src" mode="xhtml2html"><xsl:text> </xsl:text><xsl:value-of select="local-name(.)"/>="<xsl:choose><xsl:when test="starts-with(.,$site_path)"><xsl:value-of select="concat($website_prefix,substring-after(.,$site_path))"/></xsl:when><xsl:when test="starts-with(.,'http://')"><xsl:value-of select="."/></xsl:when><xsl:otherwise>[system-asset]<xsl:value-of select="."/>[/system-asset]</xsl:otherwise></xsl:choose>"</xsl:template>
+	<xsl:template match="@href|@src" mode="xhtml2html">
+		<xsl:variable name="theHREF">
+			<xsl:choose>
+				<xsl:when test="starts-with(.,$site_path)">
+					<xsl:choose>
+						<!--Check to see if there is a file extension-->
+						<xsl:when test="substring($theHREF, string-length($theHREF) - 3, 1) = '.' or substring($theHREF, string-length($theHREF) - 4, 1) = '.'">
+							<xsl:value-of select="concat($website_prefix,substring-after(.,$site_path))"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="concat($website_prefix,substring-after(.,$site_path))"/><xsl:value-of select="$file_extension"/>
+						</xsl:otherwise>
+					</xsl:choose>					
+				</xsl:when>
+				<xsl:when test="starts-with(.,'http://')"><xsl:value-of select="."/></xsl:when>
+				<xsl:otherwise>[system-asset]<xsl:value-of select="."/>[/system-asset]</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:text> </xsl:text><xsl:value-of select="local-name(.)"/>="<xsl:value-of select="$theHREF"/>"
+	</xsl:template>
 	
 	
 	<!-- Xalan component for date conversion from CMS date format to RSS 2.0 pubDate format -->
