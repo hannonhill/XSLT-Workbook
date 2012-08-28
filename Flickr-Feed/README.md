@@ -13,3 +13,4 @@
 * Choose number of total images (out of 20) to show.
 * Choose number of images per row to display.
 * Booleans for including image author and date during Lightbox effect.
+* Lightbox code found here: http://lokeshdhakar.com/projects/lightbox2/
