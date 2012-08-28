@@ -1,0 +1,56 @@
+<system-data-structure>
+  <asset type="block" identifier="feed" label="Flickr Feed Block" render-content-depth="2"/>
+  <text type="dropdown" identifier="thumbnail" label="Image Thumbnail Size" default="Square 150x150">
+    <dropdown-item value="Square 75x75"/>
+    <dropdown-item value="Square 150x150"/>
+    <dropdown-item value="Small 240x180"/>
+    <dropdown-item value="Small 320x240"/>
+  </text>
+  <text type="dropdown" identifier="full" label="Image Full Size" default="Medium 500x375">
+    <dropdown-item value="Small 320x240"/>
+    <dropdown-item value="Medium 500x375"/>
+    <dropdown-item value="Medium 640x480"/>
+    <dropdown-item value="Medium 800x600"/>
+  </text>
+  <text type="dropdown" identifier="total" label="Total Images to Show" default="20" help-text="Flickr feeds pull a maximum of 20 images.">
+    <dropdown-item value="1"/>
+    <dropdown-item value="2"/>
+    <dropdown-item value="3"/>
+    <dropdown-item value="4"/>
+    <dropdown-item value="5"/>
+    <dropdown-item value="6"/>
+    <dropdown-item value="7"/>
+    <dropdown-item value="8"/>
+    <dropdown-item value="9"/>
+    <dropdown-item value="10"/>
+    <dropdown-item value="11"/>
+    <dropdown-item value="12"/>
+    <dropdown-item value="13"/>
+    <dropdown-item value="14"/>
+    <dropdown-item value="15"/>
+    <dropdown-item value="16"/>
+    <dropdown-item value="17"/>
+    <dropdown-item value="18"/>
+    <dropdown-item value="19"/>
+    <dropdown-item value="20"/>
+  </text>
+  <text type="dropdown" identifier="per" label="Max Images per Row" default="4" help-text="This can be affected by the size of the thumbnail being shown.">
+    <dropdown-item value="1"/>
+    <dropdown-item value="2"/>
+    <dropdown-item value="3"/>
+    <dropdown-item value="4"/>
+    <dropdown-item value="5"/>
+    <dropdown-item value="6"/>
+    <dropdown-item value="7"/>
+    <dropdown-item value="8"/>
+    <dropdown-item value="9"/>
+  </text>
+  <text type="radiobutton" identifier="author" label="Show Author" default="Yes">
+    <radio-item value="Yes"/>
+    <radio-item value="No"/>
+  </text>
+  <text type="radiobutton" identifier="date" label="Show Date" default="No">
+    <radio-item value="Yes"/>
+    <radio-item value="No"/>
+  </text>
+</system-data-structure>

@@ -1,0 +1,127 @@
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:media="http://search.yahoo.com/mrss/">
+    <xsl:variable name="square75">_s</xsl:variable>
+    <xsl:variable name="square150">_q</xsl:variable>
+    <xsl:variable name="small240">_m</xsl:variable>
+    <xsl:variable name="small320">_n</xsl:variable>
+    <xsl:variable name="medium500"/>
+    <xsl:variable name="medium640">_z</xsl:variable>
+    <xsl:variable name="medium800">_c</xsl:variable>
+
+    <xsl:template match="/system-index-block/calling-page/system-page">
+        <xsl:apply-templates select="system-data-structure"/>
+    </xsl:template>
+
+    <xsl:template match="system-data-structure">
+        <xsl:variable name="imagesPerRow">
+            <xsl:value-of select="per"/>
+        </xsl:variable>
+        <xsl:variable name="totalImages">
+            <xsl:value-of select="total"/>
+        </xsl:variable>
+        <xsl:variable name="showAuthor">
+            <xsl:value-of select="author"/>
+        </xsl:variable>
+        <xsl:variable name="showDate">
+            <xsl:value-of select="date"/>
+        </xsl:variable>
+        <xsl:variable name="thumbnailCode">
+            <xsl:call-template name="imageSize">
+                <xsl:with-param name="choice" select="thumbnail"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="fullCode">
+            <xsl:call-template name="imageSize">
+                <xsl:with-param name="choice" select="full"/>
+            </xsl:call-template>
+        </xsl:variable>
+        
+        <div id="photos">
+            <xsl:apply-templates select=".//item">
+                <xsl:with-param name="thumbnailSize" select="$thumbnailCode"/>
+                <xsl:with-param name="fullSize" select="$fullCode"/>
+                <xsl:with-param name="imagesPerRow" select="$imagesPerRow"/>
+                <xsl:with-param name="totalImages" select="$totalImages"/>
+                <xsl:with-param name="showAuthor" select="$showAuthor"/>
+                <xsl:with-param name="showDate" select="$showDate"/>
+            </xsl:apply-templates>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="item">
+        <xsl:param name="thumbnailSize"/>
+        <xsl:param name="fullSize"/>
+        <xsl:param name="imagesPerRow"/>
+        <xsl:param name="totalImages"/>
+        <xsl:param name="showAuthor"/>
+        <xsl:param name="showDate"/>
+        <xsl:if test="position() &lt; ($totalImages+1)">
+            <a>
+                <xsl:attribute name="href">
+                    <xsl:call-template name="whichSize">
+                        <xsl:with-param name="which" select="$fullSize"/>
+                    </xsl:call-template>
+                </xsl:attribute>
+                <xsl:attribute name="rel">
+                    <xsl:value-of select="concat('light','box[photos]')"/>
+                </xsl:attribute>
+                <xsl:attribute name="title">
+                    <xsl:value-of select="concat('&lt;a href=&quot;',link,'&quot;&gt;')"/>
+                    <xsl:value-of select="concat(title,'&lt;/a&gt;')"/>
+                    <xsl:if test="$showAuthor = 'Yes'">
+                        <xsl:value-of select="concat(' by ',media:credit)"/>
+                    </xsl:if>
+                    <xsl:if test="$showDate = 'Yes'">
+                        <xsl:value-of select="concat(' on ',pubDate)"/>
+                    </xsl:if>
+                </xsl:attribute>
+                <img>
+                    <xsl:attribute name="src">
+                        <xsl:call-template name="whichSize">
+                            <xsl:with-param name="which" select="$thumbnailSize"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:attribute name="alt">
+                        <xsl:value-of select="title"/>
+                    </xsl:attribute>
+                </img>
+            </a>
+            <xsl:if test="(position() mod $imagesPerRow) = 0">
+                <br/>
+            </xsl:if>
+        </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="imageSize">
+        <xsl:param name="choice"/>
+
+        <xsl:choose>
+            <xsl:when test="$choice = 'Square 75x75'">
+                <xsl:value-of select="$square75"/>
+            </xsl:when>
+            <xsl:when test="$choice = 'Square 150x150'">
+                <xsl:value-of select="$square150"/>
+            </xsl:when>
+            <xsl:when test="$choice = 'Small 240x180'">
+                <xsl:value-of select="$small240"/>
+            </xsl:when>
+            <xsl:when test="$choice = 'Small 320x240'">
+                <xsl:value-of select="$small320"/>
+            </xsl:when>
+            <xsl:when test="$choice = 'Medium 640x480'">
+                <xsl:value-of select="$medium640"/>
+            </xsl:when>
+            <xsl:when test="$choice = 'Medium 800x600'">
+                <xsl:value-of select="$medium800"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$medium500"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="whichSize">
+        <xsl:param name="which"/>
+        <xsl:value-of select="substring(enclosure/@url,1,string-length(enclosure/@url)-6)"/>
+        <xsl:value-of select="concat($which,'.jpg')"/>
+    </xsl:template>
+</xsl:stylesheet>
