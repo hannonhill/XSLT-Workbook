@@ -1,6 +1,6 @@
 **flickr-feed.xml**
 
-* XSLT Format applied to a Page using flickr-feed.xml Data Definition in part or whole.
+* XSLT Format applied to a Page using flickr-feed-dd.xml Data Definition in part or whole.
 * Feed must be RSS 2.0 with <item> nodes for each feed item.
 * Includes Lightbox 2.0 effect for photos. Currently all photos will be in the same "album" during effect.
 
