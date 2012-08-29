@@ -40,7 +40,7 @@
 	<xsl:variable name="web_master">webmaster@myorganization.com</xsl:variable>
 	<!-- Path in the CMS: -->
 	<!-- Empty if you are using Cascade Server 6+ Sites -->
-	<xsl:variable name="site_path">example.com</xsl:variable>
+	<xsl:variable name="site_path">site://example.com</xsl:variable>
 
 	<!-- Folder path to your site's root if you are using the Global Area -->
 	<!-- <xsl:variable name="site_path">/MyOrg</xsl:variable> -->
@@ -139,7 +139,7 @@
 				<xsl:when test="starts-with(.,$site_path)">
 					<xsl:choose>
 						<!--Check to see if there is a file extension-->
-						<xsl:when test="substring($theHREF, string-length($theHREF) - 3, 1) = '.' or substring($theHREF, string-length($theHREF) - 4, 1) = '.'">
+						<xsl:when test="substring(., string-length(.) - 3, 1) = '.' or substring(., string-length(.) - 4, 1) = '.'">
 							<xsl:value-of select="concat($website_prefix,substring-after(.,$site_path))"/>
 						</xsl:when>
 						<xsl:otherwise>
