@@ -6,5 +6,5 @@
 **index-block-to-site-protocol.xsl**
 * Creates a site map that adheres to the [Sitemaps.org Porotocol](http://www.sitemaps.org/), which is the preferred site map protocol for most popular search engines.
 * Requirements: 
-    * An Index Block indexing all pages that need to be included in the site map. The index block must also include **System Metadata** if you wish to add the `<lastmod>` element to the site map.
+    * An Index Block indexing all pages that need to be included in the site map. The index block must also include **System Metadata** if you wish to add the `<lastmod>` element to the site map. See [fomat-date XSLT](https://github.com/hannonhill/XSLT-Workbook/blob/master/Uncategorized/format-date.xsl) for source code and information.
     * A Template containing only `<system-region name="DEFAULT" />`, with no root node surrounding the region.
