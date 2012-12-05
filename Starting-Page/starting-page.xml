@@ -1,0 +1,73 @@
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:variable name="userGroups">
+		<xsl:for-each select="/system-index-block/user-information/groups/group">
+			<xsl:value-of select="."/>
+			<xsl:if test="position() != last()">
+				<xsl:text>|</xsl:text>
+			</xsl:if>
+		</xsl:for-each>
+	</xsl:variable>
+	<xsl:variable name="accessType">write</xsl:variable>
+	<xsl:variable name="accessCheck">access-rights[group[contains($userGroups,name)][permission=$accessType]]</xsl:variable>
+	<xsl:variable name="userDisplayName">
+		<xsl:choose>
+			<xsl:when test="/system-index-block/user-information/full-name != ''">
+				<xsl:value-of select="/system-index-block/user-information/full-name"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="/system-index-block/user-information/username"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	
+	<xsl:template match="/system-index-block">
+		<div class="post">
+			<h2 class="title">
+				<xsl:value-of select="concat('Content you (', $userDisplayName,') can edit')"/>
+			</h2>
+			<div class="entry">
+				<xsl:if test="count(system-folder[descendant::system-page[$accessCheck]] | system-page[$accessCheck]) > 0">
+					<ul>
+						<xsl:apply-templates select="system-folder[descendant::system-page[$accessCheck]] | system-page[$accessCheck]"/>
+					</ul>
+				</xsl:if>
+			</div>
+		</div>
+	</xsl:template>
+	
+	<xsl:template match="system-folder">
+		<li>
+			<xsl:choose>
+				<xsl:when test="title != ''">
+					<xsl:value-of select="title"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="name"/>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:if test="count(system-folder[descendant::system-page[$accessCheck]] | system-page[$accessCheck]) > 0">
+				<ul>
+					<xsl:apply-templates select="system-folder[descendant::system-page[$accessCheck]] | system-page[$accessCheck]"/>
+				</ul>
+			</xsl:if>
+		</li>
+	</xsl:template>
+	
+	<xsl:template match="system-page">
+		<li>
+			<a>
+				<xsl:attribute name="href">
+					<xsl:value-of select="link"/>
+				</xsl:attribute>
+				<xsl:choose>
+					<xsl:when test="title != ''">
+						<xsl:value-of select="title"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="name"/>
+					</xsl:otherwise>
+				</xsl:choose>
+			</a>
+		</li>
+	</xsl:template>
+</xsl:stylesheet>
