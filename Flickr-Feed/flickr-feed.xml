@@ -121,7 +121,7 @@
 
     <xsl:template name="whichSize">
         <xsl:param name="which"/>
-        <xsl:value-of select="substring(enclosure/@url,1,string-length(enclosure/@url)-6)"/>
+        <xsl:value-of select="substring(media:thumbnail/@url,1,string-length(media:thumbnail/@url)-6)"/>
         <xsl:value-of select="concat($which,'.jpg')"/>
     </xsl:template>
 </xsl:stylesheet>
