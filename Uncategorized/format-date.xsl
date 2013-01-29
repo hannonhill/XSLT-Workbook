@@ -2,21 +2,21 @@
 <!--
     Formatting Dates in XSLT
     2008-09-25 Created by Ross Williams
-    2012-06-01 Updated by Charlie Holder
+    2013-01-29 Updated by Charlie Holder
     Copyright (c) 2008 Hannon Hill Corp. All rights reserved.
     
     ====================
     EXAMPLE USAGE
     ====================
     <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:include href="site://Site Name/path/to/format-date"/>
-    <xsl:template match="/system-index-block/calling-page/system-page">
-    <xsl:text>Last updated: </xsl:text>
-    <xsl:call-template name="format-date">
-    <xsl:with-param name="date" select="last-modified"/>
-    <xsl:with-param name="mask">medium</xsl:with-param>
-    </xsl:call-template>
-    </xsl:template>
+        <xsl:include href="site://Site Name/path/to/format-date"/>
+        <xsl:template match="/system-index-block/calling-page/system-page">
+            <xsl:text>Last updated: </xsl:text>
+            <xsl:call-template name="format-date">
+                <xsl:with-param name="date" select="last-modified"/>
+                <xsl:with-param name="mask">medium</xsl:with-param>
+            </xsl:call-template>
+        </xsl:template>
     </xsl:stylesheet>
     
     ====================
@@ -114,10 +114,10 @@
                  */
                  
                 function calendarFormat(dateString, mask) {
-                   var dateArray = dateString.split("-");
-                   var timeStamp = new Number(new Date(parseFloat(dateArray[2]),parseFloat(dateArray[0])-1,parseFloat(dateArray[1])));
-                   var formattedString = dateFormat(timeStamp, mask);
-                   return formattedString;
+                    var dateArray = dateString.split("-");
+                    var timeStamp = new Number(new Date(parseFloat(dateArray[2]),parseFloat(dateArray[0])-1,parseFloat(dateArray[1])));
+                    var formattedString = dateFormat(timeStamp, mask);
+                    return formattedString;
                 }
              
                 /*
