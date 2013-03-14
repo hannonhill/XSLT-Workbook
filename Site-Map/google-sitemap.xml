@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Generate On-demand Sitemap XML from Structured Data
+    Created by Ross Williams on 2010-02-17.
+    Copyright (c) 2010 Hannon Hill Corp. All rights reserved.
+-->
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+    <xsl:include href="/_internal/stylesheets/include/format-date"/>
+    
+    <xsl:variable name="rootURL">http://www.hannonhill.com</xsl:variable>
+    <xsl:variable name="defaultExtension">.html</xsl:variable>
+    <xsl:variable name="lastPublished" select="/system-index-block/@current-time"/>
+
+    <xsl:template match="/">
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <xsl:apply-templates/>
+        </urlset>
+    </xsl:template>
+    
+    <xsl:template match="/system-index-block[calling-page]">
+        <xsl:apply-templates select="calling-page/system-page/system-data-structure"/>
+    </xsl:template>
+    
+    <xsl:template match="/system-data-structure | system-data-structure[parent::system-page[parent::calling-page]]">
+        <xsl:apply-templates select="*[content/system-index-block or path]"/>
+    </xsl:template>
+
+    <!-- Process all non-Index-Block assets -->
+    <xsl:template match="*[content[not(system-index-block)] and path] | system-page | system-file">
+        <url>
+                <loc><xsl:value-of select="concat($rootURL,path,$defaultExtension)"/></loc>
+                <xsl:call-template name="generate-lastmod"/>
+                <xsl:call-template name="generate-changefreq"/>
+        </url>
+    </xsl:template>
+    
+    <!-- Catch non-Index-Block assets that are not published -->
+    <xsl:template match="system-page[ancestor::system-folder[not(is-published)]] | system-file[ancestor::system-folder[not(is-published)]]"/>
+    
+    <!-- Catch Index Blocks and process their contained elements -->
+    <xsl:template match="*[content/system-index-block]">
+        <xsl:apply-templates select="content/system-index-block/descendant::system-page"/>
+    </xsl:template>
+    
+    <!-- Use last-published-on of the asset if available, else fall back to last-published-on of the sitemap index -->
+    <xsl:template name="generate-lastmod">
+        <xsl:variable name="lastmodFormat">UTC:yyyy-mm-dd'T'HH:MM:ss'+00:00'</xsl:variable>
+        <lastmod><xsl:call-template name="format-date">
+            <xsl:with-param name="date" select="last-modified"/>
+            <xsl:with-param name="mask" select="$lastmodFormat"/>
+        </xsl:call-template></lastmod>
+    </xsl:template>
+    
+    <xsl:template name="generate-changefreq">
+        <xsl:choose>
+            <xsl:when test="dynamic-metadata[name='changefreq']/value != ''">
+                <changefreq><xsl:value-of select="dynamic-metadata[name='changefreq']/value"/></changefreq>
+            </xsl:when>
+            <xsl:otherwise/>
+        </xsl:choose>
+    </xsl:template>
+    
+    <!-- Catch-all -->
+    <xsl:template match="*" priority="-10">
+        [system-view:internal]
+        <xsl:comment> Unexpected Element Encountered: name="<xsl:value-of select="local-name()"/>" </xsl:comment>
+        [/system-view:internal]
+    </xsl:template>
+    
+</xsl:stylesheet>
