@@ -42,8 +42,7 @@
             </xsl:choose>
             <xsl:if test="count(system-page | system-folder[descendant::system-page]) &gt; 0">
                 <ul>
-                    <xsl:apply-templates
-                        select="system-page | system-folder[descendant::system-page]"/>
+                    <xsl:apply-templates select="system-page | system-folder[descendant::system-page]"/>
                 </ul>
             </xsl:if>
         </li>
