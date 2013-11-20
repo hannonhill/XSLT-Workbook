@@ -1,0 +1,26 @@
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <xsl:include href="/path/to/format-date"/>
+
+    <xsl:variable name="front">http://localhost:8080/entity/edit.act?type=page&amp;id=</xsl:variable>
+    <xsl:variable name="back">#highlight</xsl:variable>
+
+    <xsl:template match="/system-index-block/calling-page/system-page">
+        <p class="muted" id="quickedit">
+            <small>
+                <xsl:text>Last updated: </xsl:text>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="concat($front, @id, $back)"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="title">
+                        <xsl:text>Last Updated: </xsl:text>
+                    </xsl:attribute>
+                    <xsl:call-template name="format-date">
+                        <xsl:with-param name="date" select="last-modified"/>
+                        <xsl:with-param name="mask">mm/dd/yy</xsl:with-param>
+                    </xsl:call-template>
+                </a>
+            </small>
+        </p>
+    </xsl:template>
+</xsl:stylesheet>
