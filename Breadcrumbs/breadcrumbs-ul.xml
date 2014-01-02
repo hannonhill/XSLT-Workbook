@@ -15,8 +15,8 @@
         <xsl:choose>
             <xsl:when test="self::system-folder[@current]">
                 <xsl:choose>
-                    <xsl:when test="system-page[name = '{$defaultPage}']">
-                        <xsl:call-template name="chooseDisplay"/>
+                    <xsl:when test="system-page[name = $defaultPage]">
+                        <xsl:apply-templates select="system-page"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:call-template name="displayLink"/>
