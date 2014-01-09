@@ -1,0 +1,1 @@
+XSL include for date formatting can be found [here](https://github.com/hannonhill/XSLT-Workbook/blob/master/Uncategorized/format-date.xsl).
