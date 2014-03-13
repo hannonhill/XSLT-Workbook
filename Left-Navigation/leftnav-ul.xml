@@ -1,0 +1,54 @@
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <xsl:template match="/system-index-block">
+        <xsl:if test="count(system-page[name!='index'] | system-folder[descendant::system-page] | system-symlink) &gt; 0">
+            <ul>
+                <xsl:apply-templates select="system-page[name!='index'] | system-folder[descendant::system-page] | system-symlink"/>
+            </ul>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template match="system-page">
+        <li>
+            <a>
+                <xsl:attribute name="href">
+                    <xsl:value-of select="link"/>
+                </xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="title != ''">
+                        <xsl:value-of select="title"/>
+                    </xsl:when>
+                    <xsl:when test="display-name != ''">
+                        <xsl:value-of select="display-name"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="name"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </a>
+        </li>
+    </xsl:template>
+    <xsl:template match="system-folder">
+        <li>
+            <a>
+                <xsl:attribute name="href">
+                    <xsl:value-of select="concat(link,'/index')"/>
+                </xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="title != ''">
+                        <xsl:value-of select="title"/>
+                    </xsl:when>
+                    <xsl:when test="display-name != ''">
+                        <xsl:value-of select="display-name"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="name"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </a>
+            <xsl:if test="count(system-page[name!='index'] | system-folder[descendant::system-page] | system-symlink) &gt; 0">
+                <ul>
+                    <xsl:apply-templates select="system-page[name!='index'] | system-folder[descendant::system-page] | system-symlink"/>
+                </ul>
+            </xsl:if>
+        </li>
+    </xsl:template>
+</xsl:stylesheet>
