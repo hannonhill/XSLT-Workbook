@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:hh="http://www.hannonhill.com/XSL/Functions" xmlns:xalan="http://xml.apache.org/xalan">
+    
+    <xsl:key match="system-page[name != 'index'] | system-folder[system-page[name = 'index']]" name="firstLetter" use="translate(substring(display-name, 1, 1), 'abcdefghijklmnopqrstuvwxyz1234567890', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ##########')"/>
+    
+    <xsl:template match="system-index-block">
+        <xsl:call-template name="show-letters"/>
+        <xsl:apply-templates mode="firstLetter" select="(.//system-page[name != 'index'] | .//system-folder[system-page[name = 'index']])[generate-id(.)=generate-id(key('firstLetter', translate(substring(display-name, 1, 1), 'abcdefghijklmnopqrstuvwxyz1234567890', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ##########')))]">
+            <xsl:sort select="display-name"/>
+        </xsl:apply-templates>
+    </xsl:template>
+    
+    <xsl:template match="system-page | system-folder" mode="firstLetter">
+        <xsl:variable name="firstLetter" select="translate(substring(display-name, 1, 1), 'abcdefghijklmnopqrstuvwxyz1234567890', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ##########')"/>
+        <h2>
+            <a>
+                <xsl:attribute name="name">
+                    <xsl:value-of select="$firstLetter"/>
+                </xsl:attribute>
+            </a>
+            <xsl:value-of select="$firstLetter"/>
+        </h2>
+        <xsl:apply-templates select="key('firstLetter', $firstLetter)">
+            <xsl:sort data-type="text" order="ascending" select="display-name"/>
+        </xsl:apply-templates>		
+    </xsl:template>
+    
+    <xsl:template name="show-letters">
+        <div id="alphabet">
+            <ol>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">A</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">B</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">C</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">D</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">E</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">F</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">G</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">H</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">I</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">J</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">K</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">L</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">M</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">N</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">O</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">P</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">Q</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">R</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">S</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">T</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">U</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">V</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">W</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">X</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">Y</xsl:with-param>
+                </xsl:call-template>
+                <xsl:call-template name="active-inactive-letter">
+                    <xsl:with-param name="letter">Z</xsl:with-param>
+                </xsl:call-template>
+            </ol>
+        </div>
+    </xsl:template>
+    
+    <xsl:template name="active-inactive-letter">
+        <xsl:param name="letter"/>
+        <xsl:choose>
+            <xsl:when test="//system-page[(name != 'index' and starts-with(display-name, $letter)) or (name = 'index' and starts-with(parent::system-folder/display-name, $letter))]">
+                <li>
+                    <a>
+                        <xsl:attribute name="href">
+                            #<xsl:value-of select="$letter"/>
+                        </xsl:attribute>
+                        <span>
+                            <xsl:value-of select="$letter"/>
+                        </span>
+                    </a>
+                </li>
+            </xsl:when>
+            <xsl:otherwise>
+                <li class="inActive">
+                    <span>
+                        <xsl:value-of select="$letter"/>
+                    </span>
+                </li>				
+            </xsl:otherwise>
+        </xsl:choose> 
+    </xsl:template>
+    
+    <xsl:template match="system-page">
+        <a href="{path}">
+            <xsl:value-of select="display-name"/>
+        </a><br/>
+    </xsl:template>
+    
+    <xsl:template match="system-folder">
+        <a href="{system-page[name = 'index']/path}">
+            <xsl:value-of select="display-name"/>
+        </a><br/>
+    </xsl:template>
+    
+</xsl:stylesheet>
