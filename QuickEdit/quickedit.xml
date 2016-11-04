@@ -1,7 +1,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:include href="/path/to/format-date"/>
 
-    <xsl:variable name="front">http://localhost:8080/entity/edit.act?type=page&amp;id=</xsl:variable>
+    <xsl:variable name="front">http://localhost:8080/entity/open.act?type=page&amp;id=</xsl:variable>
     <xsl:variable name="back">#highlight</xsl:variable>
 
     <xsl:template match="/system-index-block/calling-page/system-page">
