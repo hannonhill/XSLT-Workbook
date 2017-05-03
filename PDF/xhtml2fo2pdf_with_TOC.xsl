@@ -1422,11 +1422,13 @@ hidden</xsl:attribute>
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-->
    <xsl:template match="img | html:img">
      <fo:external-graphic xsl:use-attribute-sets="img">
+       <xsl:call-template name="process-common-attributes"/>
        <xsl:call-template name="process-img"/>
      </fo:external-graphic>
    </xsl:template>
    <xsl:template match="img[ancestor::a/@href] | html:img[ancestor::html:a/@href]">
      <fo:external-graphic xsl:use-attribute-sets="img-link">
+       <xsl:call-template name="process-common-attributes"/>
        <xsl:call-template name="process-img"/>
      </fo:external-graphic>
    </xsl:template>
