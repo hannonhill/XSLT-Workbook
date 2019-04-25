@@ -1026,7 +1026,7 @@ hidden</xsl:attribute>
      <xsl:for-each select="tbody/tr | html:tbody/html:tr | tr | html:tr">
        <xsl:sort data-type="number" order="descending" select="count(td | html:td)"/>
          <xsl:if test="position()=1">
-            <xsl:for-each select="td | html:td">
+            <xsl:for-each select="td | html:td | th | html:th">
                <fo:table-column xsl:use-attribute-sets="table-column"/>
             </xsl:for-each>
         </xsl:if>
